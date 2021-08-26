@@ -15,15 +15,16 @@ public class ATM {
 	}
 
 	private static enum Action {
-		login, changeAccount, checkBalance;
+		login, changeAccount, checkBalance, deposit, withdraw;
 		// TODO: add more actions
+		//added: deposit, withdraw
 	}
 	
 	private BufferedReader inputReader;
 	private PrintStream output;
 	private String[] loggedInUserAccounts;
 	private String selectedAccount;
-	private Action selectedAction = Action.login;
+	private Action selectedAction = Action.login; //selectedAction is originally = login
 
 	private ATM(InputStream input, PrintStream output) {
 		this.inputReader = new BufferedReader(new InputStreamReader(input));
@@ -70,7 +71,15 @@ public class ATM {
 			output.println("Enter account number: (" + String.join(", ", loggedInUserAccounts) + ")");
 			return true;
 		// TODO: prompts for other actions(?)
-		default:
+		//case for deposit
+		case deposit:
+			output.println("Enter amount to deposit");
+			return true;
+		//case for withdraw
+		case withdraw:
+			output.println("Enter amount to withdraw");
+			return true;
+		default: //case of checkBalance
 			return false;
 		}
 	}
@@ -113,6 +122,45 @@ public class ATM {
 			}
 			break;
 		// TODO: handle other actions
+		//case for deposit
+		case deposit:
+			try {
+				//convert input (a string of amount to deposit) into BigDecimal
+				//do this by using BigDecimal(String) constructor
+				BigDecimal depositAmount = new BigDecimal(input);
+		
+				//get original balance before deposit is made
+				BigDecimal origBalance = AccountAccessor.getAccountBalance(selectedAccount);
+				
+				//get new balance
+				BigDecimal newBalance = depositAmount.add(origBalance);
+				
+				//update the account balance
+				AccountAccessor.updateAccountBalance(selectedAccount, newBalance);
+				
+				//print message saying deposit successful
+				output.println("Deposit successful. Updated balance: $" + newBalance);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new ATMException("Invalid amount to deposit.");
+			}
+			break;
+		//case for withdraw
+		case withdraw:
+			try {
+				BigDecimal withdrawAmount = new BigDecimal(input);
+				BigDecimal origBalance = AccountAccessor.getAccountBalance(selectedAccount);
+				BigDecimal newBalance = origBalance.subtract(withdrawAmount);
+				AccountAccessor.updateAccountBalance(selectedAccount, newBalance);
+				output.println("Withdraw successful. Updated balance: $" + newBalance);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new ATMException("Invalid amount to withdraw.");
+			}
+			break;
+			
+			
 		}
 		return null;
 	}

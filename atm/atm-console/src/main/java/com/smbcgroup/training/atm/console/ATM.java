@@ -15,7 +15,7 @@ public class ATM {
 	}
 
 	private static enum Action {
-		login, changeAccount, checkBalance;
+		login, changeAccount, checkBalance, deposit, withdraw, transfer, newAccount, accountSummary, accountHistory;
 		// TODO: add more actions
 	}
 	
@@ -70,6 +70,23 @@ public class ATM {
 			output.println("Enter account number: (" + String.join(", ", loggedInUserAccounts) + ")");
 			return true;
 		// TODO: prompts for other actions(?)
+		case deposit:
+			output.println("Enter deposit amount:");
+			return true;
+		case withdraw:
+			try {
+				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
+				output.println("Enter withdrawal amount: (current balance: $" + balance.toString() + ")");
+				return true;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return true;
+			}
+		case transfer:
+			output.println(selectedAccount);
+			output.println(String.join(", ", loggedInUserAccounts));
+			return true;
 		default:
 			return false;
 		}
@@ -113,6 +130,41 @@ public class ATM {
 			}
 			break;
 		// TODO: handle other actions
+		case deposit:
+			try {
+				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
+				try {
+					BigDecimal depositAmount = new BigDecimal(input);
+					balance = balance.add(depositAmount);
+					
+				} catch (NumberFormatException e) {
+					throw new ATMException("Invalid deposit amount.");
+				}
+				AccountAccessor.updateAccountBalance(selectedAccount, balance);
+				BigDecimal newBalance = AccountAccessor.getAccountBalance(selectedAccount);
+				output.println("New Balance: $" + newBalance);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		case withdraw:
+			try {
+				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
+				try {
+					BigDecimal withdrawAmount = new BigDecimal(input);
+					if (balance.compareTo(withdrawAmount) >= 0) {
+						balance = balance.subtract(withdrawAmount);
+					} else {
+						throw new ATMException("Invalid withdrawal amount.");
+					}					
+				} catch (NumberFormatException e) {
+					throw new ATMException("Invalid deposit amount.");
+				}
+				AccountAccessor.updateAccountBalance(selectedAccount, balance);
+				BigDecimal newBalance = AccountAccessor.getAccountBalance(selectedAccount);
+				output.println("New Balance: $" + newBalance);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 		return null;
 	}

@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Random;
 
 import com.smbcgroup.training.atm.dao.txtFile.AccountAccessor;
 
@@ -84,8 +86,17 @@ public class ATM {
 				return true;
 			}
 		case transfer:
-			output.println(selectedAccount);
-			output.println(String.join(", ", loggedInUserAccounts));
+			String[] otherAccounts;
+			otherAccounts = Arrays.stream(loggedInUserAccounts).filter(account -> !account.equals(selectedAccount)).toArray(String[]::new);
+			if (otherAccounts.length >= 1) {
+				output.println("Enter account number to transfer to: (" + String.join(", ", otherAccounts) + ")");
+				return true;
+			} else {
+				output.println("You have no other account.");
+				return false;
+			}
+		case newAccount:
+			output.println("To randomly generate a new account number, press 1. Otherwise, enter a new 6 digit account number:");
 			return true;
 		default:
 			return false;
@@ -135,6 +146,9 @@ public class ATM {
 				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
 				try {
 					BigDecimal depositAmount = new BigDecimal(input);
+					if (depositAmount.compareTo(BigDecimal.ZERO) < 0) {
+						throw new ATMException("Invalid deposit amount.");
+					}
 					balance = balance.add(depositAmount);
 					
 				} catch (NumberFormatException e) {
@@ -146,6 +160,7 @@ public class ATM {
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
+			break;
 		case withdraw:
 			try {
 				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
@@ -164,6 +179,25 @@ public class ATM {
 				output.println("New Balance: $" + newBalance);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
+			}
+			break;
+		case newAccount:
+			if ("1".equals(input)) {
+				Random rnd = new Random();
+				int number = rnd.nextInt(999999);
+				String newAccountNumber = String.format("%06d", number);
+				output.println(newAccountNumber);
+			} else {
+				if (!input.matches("^\\d{6}$"))
+					throw new ATMException("Invalid account number.");
+				for (String userAccount : loggedInUserAccounts) {
+					if (userAccount.equals(input)) {
+						throw new ATMException("Invalid account number.");
+					} else {
+						selectedAccount = input;
+						return null;
+					}
+				}
 			}
 		}
 		return null;

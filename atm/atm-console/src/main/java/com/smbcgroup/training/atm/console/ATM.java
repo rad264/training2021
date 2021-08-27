@@ -17,7 +17,7 @@ public class ATM {
 	}
 
 	private static enum Action {
-		login, changeAccount, checkBalance, deposit, withdraw, transfer, newAccount, accountSummary, accountHistory;
+		login, changeAccount, checkBalance, deposit, withdraw, transfer, newAccount, accountSummary, accountHistory, transferAmount;
 		// TODO: add more actions
 	}
 	
@@ -26,6 +26,7 @@ public class ATM {
 	private String[] loggedInUserAccounts;
 	private String loggedInUserId;
 	private String selectedAccount;
+	private String transferAccount = "";
 	private Action selectedAction = Action.login;
 
 	private ATM(InputStream input, PrintStream output) {
@@ -96,6 +97,17 @@ public class ATM {
 				output.println("You have no other account.");
 				return false;
 			}
+		case transferAmount:
+			try {
+				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
+				output.println("Enter transfer amount: (current balance: $" + balance.toString() + ")");
+				return true;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return true;
+			}
+			
 		case newAccount:
 			output.println("To randomly generate a new account number, press 1. Otherwise, enter a new 6 digit account number:");
 			return true;
@@ -146,6 +158,7 @@ public class ATM {
 		case deposit:
 			try {
 				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
+				
 				try {
 					BigDecimal depositAmount = new BigDecimal(input);
 					if (depositAmount.compareTo(BigDecimal.ZERO) < 0) {
@@ -168,13 +181,16 @@ public class ATM {
 				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
 				try {
 					BigDecimal withdrawAmount = new BigDecimal(input);
+					if (withdrawAmount.compareTo(BigDecimal.ZERO) < 0) {
+						throw new ATMException("Invalid deposit amount.");
+					}
 					if (balance.compareTo(withdrawAmount) >= 0) {
 						balance = balance.subtract(withdrawAmount);
 					} else {
-						throw new ATMException("Invalid withdrawal amount.");
+						throw new ATMException("Invalid amount.");
 					}					
 				} catch (NumberFormatException e) {
-					throw new ATMException("Invalid deposit amount.");
+					throw new ATMException("Invalid amount.");
 				}
 				AccountAccessor.updateAccountBalance(selectedAccount, balance);
 				BigDecimal newBalance = AccountAccessor.getAccountBalance(selectedAccount);
@@ -188,11 +204,40 @@ public class ATM {
 				throw new ATMException("Invalid account number.");
 			for (String userAccount : loggedInUserAccounts) {
 				if (userAccount.equals(input)) {
-					selectedAccount = input;
-					return null;
+					transferAccount = input;
+					return Action.transferAmount;
 				}
 			}
 			throw new ATMException("Account number not found.");
+			
+		case transferAmount:
+			try {
+				BigDecimal originBalance = AccountAccessor.getAccountBalance(selectedAccount);
+				BigDecimal destBalance = AccountAccessor.getAccountBalance(transferAccount);
+				try {
+					BigDecimal transferAmount = new BigDecimal(input);
+					if (transferAmount.compareTo(BigDecimal.ZERO) < 0) {
+						throw new ATMException("Invalid deposit amount.");
+					}
+					if (originBalance.compareTo(transferAmount) >= 0) {
+						originBalance = originBalance.subtract(transferAmount);
+						destBalance = destBalance.add(transferAmount);
+					} else {
+						throw new ATMException("Invalid amount.");
+					}					
+				} catch (NumberFormatException e) {
+					throw new ATMException("Invalid amount.");
+				}
+				AccountAccessor.updateAccountBalance(selectedAccount, originBalance);
+				AccountAccessor.updateAccountBalance(transferAccount, destBalance);
+				BigDecimal newOrigBalance = AccountAccessor.getAccountBalance(selectedAccount);
+				BigDecimal newDestBalance = AccountAccessor.getAccountBalance(transferAccount);
+				output.println("Account #" + selectedAccount + " Balance: $" + newOrigBalance);
+				output.println("Account #" + transferAccount + " Balance: $" + newDestBalance);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			break;
 		
 		case newAccount:
 			if ("1".equals(input)) {
@@ -215,7 +260,6 @@ public class ATM {
 				loggedInUserAccounts = AccountAccessor.getUserAccounts(loggedInUserId);
 				output.println("Account created successfully! (" + String.join(", ", loggedInUserAccounts) + ")");
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				throw new ATMException("Could not create a new account. Try again.");
 			}
 			break;

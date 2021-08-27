@@ -24,6 +24,7 @@ public class ATM {
 	private BufferedReader inputReader;
 	private PrintStream output;
 	private String[] loggedInUserAccounts;
+	private String loggedInUserId;
 	private String selectedAccount;
 	private Action selectedAction = Action.login;
 
@@ -117,6 +118,7 @@ public class ATM {
 		case login:
 			try {
 				loggedInUserAccounts = AccountAccessor.getUserAccounts(input);
+				loggedInUserId = input;
 				return Action.changeAccount;
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -181,12 +183,22 @@ public class ATM {
 				throw new RuntimeException(e);
 			}
 			break;
+		case transfer:
+			if (!input.matches("^\\d{6}$"))
+				throw new ATMException("Invalid account number.");
+			for (String userAccount : loggedInUserAccounts) {
+				if (userAccount.equals(input)) {
+					selectedAccount = input;
+					return null;
+				}
+			}
+			throw new ATMException("Account number not found.");
+		
 		case newAccount:
 			if ("1".equals(input)) {
 				Random rnd = new Random();
 				int number = rnd.nextInt(999999);
-				String newAccountNumber = String.format("%06d", number);
-				output.println(newAccountNumber);
+				selectedAccount = String.format("%06d", number);
 			} else {
 				if (!input.matches("^\\d{6}$"))
 					throw new ATMException("Invalid account number.");
@@ -195,10 +207,18 @@ public class ATM {
 						throw new ATMException("Invalid account number.");
 					} else {
 						selectedAccount = input;
-						return null;
 					}
 				}
 			}
+			try {
+				AccountAccessor.createNewAccount(selectedAccount, loggedInUserId);
+				loggedInUserAccounts = AccountAccessor.getUserAccounts(loggedInUserId);
+				output.println("Account created successfully! (" + String.join(", ", loggedInUserAccounts) + ")");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				throw new ATMException("Could not create a new account. Try again.");
+			}
+			break;
 		}
 		return null;
 	}

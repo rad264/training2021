@@ -47,23 +47,6 @@ public class AccountAccessor {
 		Files.writeString(Path.of(fileName + ".txt"), newContents);
 	}
 	
-	public static void main(String args[]) throws IOException {
-		//System.out.println(getUserAccounts("rdelaney")[1]);
-		//System.out.println(getAccountBalance("222333"));
-		//Random randomAccountGenerator = new Random();
-		//int newAcctNumber = randomAccountGenerator.nextInt(999999);
-		//System.out.println(newAcctNumber);
-		
-		
-		//File newAcctFile = new File(dataLocation + "accounts/" + 444444 + ".txt");
-		//FileWriter fw = new FileWriter(newAcctFile, true);
-		//fw.write("100.00");
-		//System.out.println("Successfully wrote to the file.");
-		//fw.close();
-		//System.out.println(getAccountBalance("444444"));
-		
-		
-		
-	}
+	
 
 }

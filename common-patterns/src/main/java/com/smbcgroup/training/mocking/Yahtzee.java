@@ -7,7 +7,12 @@ import java.util.stream.Stream;
 
 public class Yahtzee {
 
-	private Die die = new Die();
+	//private DieService die = new DieServiceImpl();
+	private DieService die;
+	
+	public Yahtzee(DieService die) {
+		this.die = die;
+	}
 
 	public Result roll() {
 		Integer[] dice = Stream.generate(die::roll).limit(5).toArray(Integer[]::new);

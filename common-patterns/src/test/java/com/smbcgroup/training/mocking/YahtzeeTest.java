@@ -6,16 +6,22 @@ import org.junit.Test;
 
 public class YahtzeeTest {
 	
-	private Yahtzee game = new Yahtzee();
+	DieServiceImpl fairDie = new DieServiceImpl();
+	DieServiceImplControlled fixedDie = new DieServiceImplControlled();
+	private Yahtzee gameFair = new Yahtzee(fairDie);
+	private Yahtzee gameFixed = new Yahtzee(fixedDie);
 	
 	@Test
 	public void testYahtzee() {
-		assertEquals(Yahtzee.Result.YAHTZEE, game.roll());
+		fixedDie.setDieValue(5);
+		assertEquals(5, fixedDie.roll());
+		assertEquals(Yahtzee.Result.YAHTZEE, gameFixed.roll());
 	}
+	
 	
 	@Test
 	public void testChance() {
-		assertEquals(Yahtzee.Result.CHANCE, game.roll());
+		assertEquals(Yahtzee.Result.CHANCE, gameFair.roll());
 	}
 
 }

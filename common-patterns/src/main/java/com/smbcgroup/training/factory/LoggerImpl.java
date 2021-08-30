@@ -4,15 +4,23 @@ import java.util.EnumMap;
 
 public class LoggerImpl implements Logger {
 	
+	private static LoggerImpl loggerImpl = new LoggerImpl(); //static initializer block
+	
+	
 	private StringBuilder debugLogs = new StringBuilder("DEBUG LOGS:");
 	private StringBuilder infoLogs = new StringBuilder("INFO LOGS:");
 	private StringBuilder errorLogs = new StringBuilder("ERROR LOGS:");
 	private EnumMap<LogLevel, StringBuilder> logs = new EnumMap<>(LogLevel.class);
 	
-	public LoggerImpl() {
+	private LoggerImpl() { //make private to prevent other classes from instantiating
 		logs.put(LogLevel.DEBUG, debugLogs);
 		logs.put(LogLevel.INFO, infoLogs);
 		logs.put(LogLevel.ERROR, errorLogs);
+	}
+	
+	//static instance method
+	public static LoggerImpl getLoggerImpl() {
+		return loggerImpl;
 	}
 
 	@Override
@@ -44,5 +52,6 @@ public class LoggerImpl implements Logger {
 	private void addLine(LogLevel level, String message) {
 		logs.get(level).append("\n").append(message);
 	}
+	
 
 }

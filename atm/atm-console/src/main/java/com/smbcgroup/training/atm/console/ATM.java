@@ -15,7 +15,8 @@ public class ATM {
 	}
 
 	private static enum Action {
-		login, changeAccount, checkBalance;
+		login, changeAccount, checkBalance, deposit, withdraw, transferBetweenAccounts,
+		openNewAccount, summary, transactionHistory;
 		// TODO: add more actions
 	}
 	
@@ -70,6 +71,9 @@ public class ATM {
 			output.println("Enter account number: (" + String.join(", ", loggedInUserAccounts) + ")");
 			return true;
 		// TODO: prompts for other actions(?)
+		case deposit:
+			output.println("Enter deposit amount: ");
+			return true;
 		default:
 			return false;
 		}
@@ -112,7 +116,20 @@ public class ATM {
 				throw new RuntimeException(e);
 			}
 			break;
-		// TODO: handle other actions
+		case deposit:
+			try {
+				BigDecimal preBalance = AccountAccessor.getAccountBalance(selectedAccount);
+				BigDecimal depositAmount =  new BigDecimal(input);
+				AccountAccessor.updateAccountBalance(selectedAccount, preBalance.add(depositAmount));
+				BigDecimal newBalance = AccountAccessor.getAccountBalance(selectedAccount);
+				output.println("Cool! You just deposit: $ "+ input + ", your total balance is $" + newBalance.toString()+"! You are so rich!");
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			break;
+		// TODO: handle other actions 
+	//, withdraw, transferBetweenAccounts,
+//			openNewAccount, summary, transactionHistory;
 		}
 		return null;
 	}

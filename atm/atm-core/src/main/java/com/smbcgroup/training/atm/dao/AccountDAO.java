@@ -10,5 +10,7 @@ public interface AccountDAO {
 	Account getAccount(String accountNumber) throws AccountNotFoundException;
 
 	void updateAccount(Account account);
+	
+	Account createAccount(String userId, String accountNumber);
 
 }

@@ -1,5 +1,6 @@
 package com.smbcgroup.training.atm;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 
 public class Account {
@@ -22,5 +23,11 @@ public class Account {
 	public void setBalance(BigDecimal balance) {
 		this.balance = balance;
 	}
-
+	
+	public void addBalance(BigDecimal amount) throws IOException {
+		if (amount.compareTo(BigDecimal.ZERO) < 0) {
+			throw new IOException("Invalid amount.");
+		}
+		this.balance.add(amount);
+	}
 }

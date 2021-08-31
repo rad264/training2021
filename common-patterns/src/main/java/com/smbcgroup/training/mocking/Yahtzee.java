@@ -7,10 +7,14 @@ import java.util.stream.Stream;
 
 public class Yahtzee {
 
-	private Die die = new Die();
+	private Die die;
+	
+	public Yahtzee(Die die) {
+		this.die = die;
+	}
 
 	public Result roll() {
-		Integer[] dice = Stream.generate(die::roll).limit(5).toArray(Integer[]::new);
+		Integer[] dice = Stream.generate(this.die::roll).limit(5).toArray(Integer[]::new);
 		return Result.evaluate(dice);
 	}
 

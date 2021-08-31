@@ -6,7 +6,7 @@ import org.junit.Test;
 
 public class YahtzeeTest {
 	
-	private Yahtzee game = new Yahtzee();
+	private Yahtzee game = new Yahtzee(new Die());
 	
 	@Test
 	public void testYahtzee() {

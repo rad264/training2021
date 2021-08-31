@@ -10,6 +10,14 @@ import java.util.Arrays;
 import java.util.Random;
 
 import com.smbcgroup.training.atm.dao.txtFile.AccountAccessor;
+import com.smbcgroup.training.atm.dao.txtFile.AccountDAOTxtFileImpl;
+import com.smbcgroup.training.atm.ATMService;
+import com.smbcgroup.training.atm.Account;
+import com.smbcgroup.training.atm.dao.AccountDAO;
+import com.smbcgroup.training.atm.dao.AccountNotFoundException;
+import com.smbcgroup.training.atm.User;
+import com.smbcgroup.training.atm.dao.UserNotFoundException;
+
 
 public class ATM {
 	public static void main(String[] args) throws IOException {
@@ -23,11 +31,12 @@ public class ATM {
 	
 	private BufferedReader inputReader;
 	private PrintStream output;
-	private String[] loggedInUserAccounts;
-	private String loggedInUserId;
-	private String selectedAccount;
-	private String transferAccount = "";
+	private Account selectedAccount;
+	private Account transferAccount;
 	private Action selectedAction = Action.login;
+	private User loggedInUser;
+	private AccountDAOTxtFileImpl dao = new AccountDAOTxtFileImpl();
+	private ATMService atmService;
 
 	private ATM(InputStream input, PrintStream output) {
 		this.inputReader = new BufferedReader(new InputStreamReader(input));
@@ -36,6 +45,7 @@ public class ATM {
 
 	private void beginSession() throws IOException {
 		try {
+			atmService = new ATMService(dao);
 			output.println("Welcome!");
 			while (true)
 				triggerAction();
@@ -50,7 +60,7 @@ public class ATM {
 		}
 	}
 
-	private void triggerAction() throws IOException, SystemExit {
+	private void triggerAction() throws IOException, SystemExit, AccountNotFoundException, UserNotFoundException {
 		try {
 			String input = null;
 			if (promptUserInput())
@@ -71,25 +81,19 @@ public class ATM {
 			output.println("Enter user ID:");
 			return true;
 		case changeAccount:
-			output.println("Enter account number: (" + String.join(", ", loggedInUserAccounts) + ")");
+			output.println("Enter account number: (" + String.join(", ", loggedInUser.getAccounts()) + ")");
 			return true;
 		// TODO: prompts for other actions(?)
 		case deposit:
 			output.println("Enter deposit amount:");
 			return true;
 		case withdraw:
-			try {
-				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
-				output.println("Enter withdrawal amount: (current balance: $" + balance.toString() + ")");
-				return true;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return true;
-			}
+			BigDecimal balance = selectedAccount.getBalance();
+			output.println("Enter withdrawal amount: (current balance: $" + balance.toString() + ")");
+			return true;
 		case transfer:
 			String[] otherAccounts;
-			otherAccounts = Arrays.stream(loggedInUserAccounts).filter(account -> !account.equals(selectedAccount)).toArray(String[]::new);
+			otherAccounts = Arrays.stream(loggedInUser.getAccounts()).filter(account -> !account.equals(selectedAccount.getAccountNumber())).toArray(String[]::new);
 			if (otherAccounts.length >= 1) {
 				output.println("Enter account number to transfer to: (" + String.join(", ", otherAccounts) + ")");
 				return true;
@@ -98,15 +102,9 @@ public class ATM {
 				return false;
 			}
 		case transferAmount:
-			try {
-				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
-				output.println("Enter transfer amount: (current balance: $" + balance.toString() + ")");
-				return true;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return true;
-			}
+			BigDecimal currentBalance = selectedAccount.getBalance();
+			output.println("Enter transfer amount: (current balance: $" + currentBalance.toString() + ")");
+			return true;
 			
 		case newAccount:
 			output.println("To randomly generate a new account number, press 1. Otherwise, enter a new 6 digit account number:");
@@ -116,7 +114,7 @@ public class ATM {
 		}
 	}
 
-	private Action performActionAndGetNextAction(String input) throws ATMException, SystemExit {
+	private Action performActionAndGetNextAction(String input) throws ATMException, SystemExit, UserNotFoundException, AccountNotFoundException, IOException {
 		if ("exit".equals(input))
 			throw new SystemExit();
 		if (selectedAction == null) {
@@ -128,83 +126,55 @@ public class ATM {
 		}
 		switch (selectedAction) {
 		case login:
-			try {
-				loggedInUserAccounts = AccountAccessor.getUserAccounts(input);
-				loggedInUserId = input;
-				return Action.changeAccount;
-			} catch (IOException e) {
-				e.printStackTrace();
-				throw new ATMException("Invalid user ID.");
-			}
+			loggedInUser = atmService.getUser(input);
+			return Action.changeAccount;
+				
 		case changeAccount:
-			if (!input.matches("^\\d{6}$"))
-				throw new ATMException("Invalid account number.");
-			for (String userAccount : loggedInUserAccounts) {
+			for (String userAccount : loggedInUser.getAccounts()) {
 				if (userAccount.equals(input)) {
-					selectedAccount = input;
+					try {						
+						selectedAccount = atmService.getAccount(input);
+					} catch (Exception e) {
+						throw new ATMException(e.getMessage());
+					}
 					return null;
 				}
 			}
 			throw new ATMException("Account number not found.");
+			
 		case checkBalance:
-			try {
-				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
-				output.println("Balance: $" + balance);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+			BigDecimal balance = selectedAccount.getBalance();
+			output.println("Balance: $" + balance);
 			break;
 		// TODO: handle other actions
-		case deposit:
+		case deposit:			
 			try {
-				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
-				
-				try {
-					BigDecimal depositAmount = new BigDecimal(input);
-					if (depositAmount.compareTo(BigDecimal.ZERO) < 0) {
-						throw new ATMException("Invalid deposit amount.");
-					}
-					balance = balance.add(depositAmount);
-					
-				} catch (NumberFormatException e) {
-					throw new ATMException("Invalid deposit amount.");
-				}
-				AccountAccessor.updateAccountBalance(selectedAccount, balance);
-				BigDecimal newBalance = AccountAccessor.getAccountBalance(selectedAccount);
+				BigDecimal depositAmount = new BigDecimal(input);
+				atmService.deposit(selectedAccount, depositAmount);
+				BigDecimal newBalance = selectedAccount.getBalance();
 				output.println("New Balance: $" + newBalance);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
+			} catch (NumberFormatException e) {
+				throw new ATMException("Invalid amount.");
 			}
 			break;
+			
 		case withdraw:
 			try {
-				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
-				try {
-					BigDecimal withdrawAmount = new BigDecimal(input);
-					if (withdrawAmount.compareTo(BigDecimal.ZERO) < 0) {
-						throw new ATMException("Invalid deposit amount.");
-					}
-					if (balance.compareTo(withdrawAmount) >= 0) {
-						balance = balance.subtract(withdrawAmount);
-					} else {
-						throw new ATMException("Invalid amount.");
-					}					
-				} catch (NumberFormatException e) {
-					throw new ATMException("Invalid amount.");
-				}
-				AccountAccessor.updateAccountBalance(selectedAccount, balance);
-				BigDecimal newBalance = AccountAccessor.getAccountBalance(selectedAccount);
+				BigDecimal withdrawAmount = new BigDecimal(input);
+				atmService.withdraw(selectedAccount, withdrawAmount);
+				BigDecimal newBalance = selectedAccount.getBalance();
 				output.println("New Balance: $" + newBalance);
+			} catch (NumberFormatException e) {
+				throw new ATMException("Invalid amount.");
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw new ATMException(e.getMessage());
 			}
 			break;
+			
 		case transfer:
-			if (!input.matches("^\\d{6}$"))
-				throw new ATMException("Invalid account number.");
-			for (String userAccount : loggedInUserAccounts) {
+			for (String userAccount : loggedInUser.getAccounts()) {
 				if (userAccount.equals(input)) {
-					transferAccount = input;
+					transferAccount = atmService.getAccount(input);
 					return Action.transferAmount;
 				}
 			}
@@ -212,55 +182,25 @@ public class ATM {
 			
 		case transferAmount:
 			try {
-				BigDecimal originBalance = AccountAccessor.getAccountBalance(selectedAccount);
-				BigDecimal destBalance = AccountAccessor.getAccountBalance(transferAccount);
-				try {
-					BigDecimal transferAmount = new BigDecimal(input);
-					if (transferAmount.compareTo(BigDecimal.ZERO) < 0) {
-						throw new ATMException("Invalid deposit amount.");
-					}
-					if (originBalance.compareTo(transferAmount) >= 0) {
-						originBalance = originBalance.subtract(transferAmount);
-						destBalance = destBalance.add(transferAmount);
-					} else {
-						throw new ATMException("Invalid amount.");
-					}					
-				} catch (NumberFormatException e) {
-					throw new ATMException("Invalid amount.");
-				}
-				AccountAccessor.updateAccountBalance(selectedAccount, originBalance);
-				AccountAccessor.updateAccountBalance(transferAccount, destBalance);
-				BigDecimal newOrigBalance = AccountAccessor.getAccountBalance(selectedAccount);
-				BigDecimal newDestBalance = AccountAccessor.getAccountBalance(transferAccount);
-				output.println("Account #" + selectedAccount + " Balance: $" + newOrigBalance);
-				output.println("Account #" + transferAccount + " Balance: $" + newDestBalance);
+				BigDecimal transferAmount = new BigDecimal(input);
+				atmService.transfer(selectedAccount, transferAccount, transferAmount);
+				output.println("Account #" + selectedAccount.getAccountNumber() + " Balance: $" + selectedAccount.getBalance());
+				output.println("Account #" + transferAccount.getAccountNumber() + " Balance: $" + transferAccount.getBalance());
+			} catch (NumberFormatException e) {
+				throw new ATMException("Invalid amount.");
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				// TODO Auto-generated catch block
+				throw new ATMException("Invalid amount.");
 			}
 			break;
 		
 		case newAccount:
-			if ("1".equals(input)) {
-				Random rnd = new Random();
-				int number = rnd.nextInt(999999);
-				selectedAccount = String.format("%06d", number);
-			} else {
-				if (!input.matches("^\\d{6}$"))
-					throw new ATMException("Invalid account number.");
-				for (String userAccount : loggedInUserAccounts) {
-					if (userAccount.equals(input)) {
-						throw new ATMException("Invalid account number.");
-					} else {
-						selectedAccount = input;
-					}
-				}
-			}
 			try {
-				AccountAccessor.createNewAccount(selectedAccount, loggedInUserId);
-				loggedInUserAccounts = AccountAccessor.getUserAccounts(loggedInUserId);
-				output.println("Account created successfully! (" + String.join(", ", loggedInUserAccounts) + ")");
+				selectedAccount = atmService.createAccount(loggedInUser, input);
 			} catch (IOException e) {
-				throw new ATMException("Could not create a new account. Try again.");
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new ATMException("Invalid amount.");
 			}
 			break;
 		}

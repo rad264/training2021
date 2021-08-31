@@ -2,7 +2,7 @@ package com.smbcgroup.training.builder;
 
 public class ImmutableDate {
 	
-	public static class Builder {
+	public static class Builder { //static bc Builder is not belonging to an instance of Immutable date
 		private int year;
 		private int month;
 		private int day;

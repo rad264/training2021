@@ -5,23 +5,21 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 public class YahtzeeTest {
-	
-	DieServiceImpl fairDie = new DieServiceImpl();
-	DieServiceImplControlled fixedDie = new DieServiceImplControlled();
-	private Yahtzee gameFair = new Yahtzee(fairDie);
-	private Yahtzee gameFixed = new Yahtzee(fixedDie);
+
+	private static final MockDie die = new MockDie();
+	private Yahtzee game = new Yahtzee(die);
 	
 	@Test
 	public void testYahtzee() {
-		fixedDie.setDieValue(5);
-		assertEquals(5, fixedDie.roll());
-		assertEquals(Yahtzee.Result.YAHTZEE, gameFixed.roll());
+		die.setRolls(6);
+		assertEquals(Yahtzee.Result.YAHTZEE, game.roll());
 	}
 	
 	
 	@Test
 	public void testChance() {
-		assertEquals(Yahtzee.Result.CHANCE, gameFair.roll());
+		die.setRolls(1, 2, 3, 5, 6);
+		assertEquals(Yahtzee.Result.CHANCE, game.roll());
 	}
 
 }

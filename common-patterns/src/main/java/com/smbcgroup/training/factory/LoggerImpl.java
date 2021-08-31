@@ -18,7 +18,8 @@ public class LoggerImpl implements Logger {
 		logs.put(LogLevel.ERROR, errorLogs);
 	}
 	
-	//static instance method
+	//static instance method so it belongs to the class
+	//and there is only one instance of class so therefore only one instance of the obj
 	public static LoggerImpl getLoggerImpl() {
 		return loggerImpl;
 	}

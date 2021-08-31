@@ -7,10 +7,10 @@ import java.util.stream.Stream;
 
 public class Yahtzee {
 
-	//private DieService die = new DieServiceImpl();
-	private DieService die;
+	private Die die;
+
 	
-	public Yahtzee(DieService die) {
+	public Yahtzee(Die die) {
 		this.die = die;
 	}
 
@@ -25,7 +25,7 @@ public class Yahtzee {
 			boolean matches(Integer[] dice) {
 				Set<Integer> set = new HashSet<>();
 				Collections.addAll(set, dice);
-				return set.size() == 5;
+				return set.size() == 1;
 			}
 		},
 		CHANCE {

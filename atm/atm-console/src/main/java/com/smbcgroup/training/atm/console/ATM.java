@@ -74,6 +74,9 @@ public class ATM {
 		case deposit:
 			output.println("Enter deposit amount: ");
 			return true;
+		case withdraw:
+			output.println("Enter withdraw amount: ");
+			return true;
 		default:
 			return false;
 		}
@@ -123,6 +126,22 @@ public class ATM {
 				AccountAccessor.updateAccountBalance(selectedAccount, preBalance.add(depositAmount));
 				BigDecimal newBalance = AccountAccessor.getAccountBalance(selectedAccount);
 				output.println("Cool! You just deposit: $ "+ input + ", your total balance is $" + newBalance.toString()+"! You are so rich!");
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			break;
+		case withdraw:
+
+			try {
+				BigDecimal preBalance = AccountAccessor.getAccountBalance(selectedAccount);
+				BigDecimal withdrawAmout =  new BigDecimal(input);
+				if(preBalance.subtract(withdrawAmout).compareTo(new BigDecimal("0")) >= 0) {
+					AccountAccessor.updateAccountBalance(selectedAccount, preBalance.subtract(withdrawAmout));
+					BigDecimal newBalance = AccountAccessor.getAccountBalance(selectedAccount);
+					output.println("Cool! You just withdraw: $ "+ input + ", your total balance is $" + newBalance.toString()+"! You are so rich!");
+				}else {
+					output.println("You are bankrupt!");
+				}
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}

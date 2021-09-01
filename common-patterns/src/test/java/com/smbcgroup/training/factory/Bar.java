@@ -1,7 +1,7 @@
 package com.smbcgroup.training.factory;
 
 public class Bar {
-	private static final Logger logger = new LoggerImpl();
+	private static final Logger logger = LoggerImplFactory.getInstance();
 	
 	public boolean isBar(String str) {
 		logger.debug("Entering method Bar.isBar");

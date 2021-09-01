@@ -1,9 +1,13 @@
 package com.smbcgroup.training.atm;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -44,6 +48,57 @@ public class ATMServiceTest {
 		mockDAO.stub_getAccount(account);
 		assertSame(account, service.getAccount("123456"));
 	}
+	
+	@Test
+	public void testDeposit() throws AccountNotFoundException {
+		Account account = new Account();
+		account.setAccountNumber("123456");
+		account.setBalance(new BigDecimal("100.00"));
+		mockDAO.stub_getAccount(account);
+		service.deposit(account.getAccountNumber(), new BigDecimal("10.00"));
+		Account updatedAccount = mockDAO.spy_updateAccount().get(0);
+		assertEquals(new BigDecimal("110.00"), updatedAccount.getBalance());
+		
+	}
+	
+	@Test
+	public void testWithdraw() throws AccountNotFoundException, Exception {
+		//test1 - case where amount <= balance
+		Account account = new Account();
+		account.setAccountNumber("123456");
+		account.setBalance(new BigDecimal("100.00"));
+		mockDAO.stub_getAccount(account);
+		service.withdraw(account.getAccountNumber(), new BigDecimal("10.00"));
+		Account updatedAccount = mockDAO.spy_updateAccount().get(0);
+		assertEquals(new BigDecimal("90.00"), updatedAccount.getBalance());
+		
+		//test2 - case where amount > balance
+		//Account account2 = new Account();
+		//account2.setAccountNumber("123456");
+		//account2.setBalance(new BigDecimal("100.00"));
+		//mockDAO.stub_getAccount(account2);
+		//service.withdraw(account.getAccountNumber(), new BigDecimal("110.00"));
+		
+	}
+	
+	@Test
+	public void testTransfer() throws AccountNotFoundException, Exception {
+		Account account1 = new Account();
+		Account account2 = new Account();
+		account1.setAccountNumber("123456");
+		account2.setAccountNumber("654321");
+		account1.setBalance(new BigDecimal("200.00"));
+		account2.setBalance(new BigDecimal("100.00"));
+		mockDAO.stub_getAccount(account1);
+		mockDAO.stub_getAccount(account2);
+		service.transfer(account1.getAccountNumber(), account2.getAccountNumber(), new BigDecimal("25.00"));
+		Account debitAccount = mockDAO.spy_updateAccount().get(0);
+		Account creditAccount = mockDAO.spy_updateAccount().get(1);
+		assertEquals(new BigDecimal("175.00"), debitAccount.getBalance());
+		assertEquals(new BigDecimal("125.00"), creditAccount.getBalance());
+			
+	}
+	
 
 	private static class MockAccountDAO implements AccountDAO {
 
@@ -78,19 +133,20 @@ public class ATMServiceTest {
 		public void stub_getAccount(Account account) {
 			getAccount_value = account;
 		}
+	
 
 		public void stub_getAccount(AccountNotFoundException exception) {
 			getAccount_exception = exception;
 		}
 
-		private Account updateAccount_capture;
+		private List<Account> updateAccount_capture = new ArrayList<>();
 
 		@Override
 		public void updateAccount(Account account) {
-			updateAccount_capture = account;
+			updateAccount_capture.add(account);
 		}
 
-		public Account spy_updateAccount() {
+		public List<Account> spy_updateAccount() {
 			return updateAccount_capture;
 		}
 

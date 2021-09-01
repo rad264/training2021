@@ -7,7 +7,12 @@ import java.util.stream.Stream;
 
 public class Yahtzee {
 
-	private Die die = new Die();
+	private Die die;
+
+	
+	public Yahtzee(Die die) {
+		this.die = die;
+	}
 
 	public Result roll() {
 		Integer[] dice = Stream.generate(die::roll).limit(5).toArray(Integer[]::new);
@@ -20,7 +25,7 @@ public class Yahtzee {
 			boolean matches(Integer[] dice) {
 				Set<Integer> set = new HashSet<>();
 				Collections.addAll(set, dice);
-				return set.size() == 5;
+				return set.size() == 1;
 			}
 		},
 		CHANCE {

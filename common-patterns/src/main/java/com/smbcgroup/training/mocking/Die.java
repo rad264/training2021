@@ -2,7 +2,7 @@ package com.smbcgroup.training.mocking;
 
 import java.util.Random;
 
-public class Die {
+public class Die implements DieService {
 	
 	private Random random = new Random();
 	private int sides;
@@ -15,8 +15,10 @@ public class Die {
 		this.sides = sides;
 	}
 	
+	@Override
 	public int roll() {
 		return random.nextInt(sides) + 1;
 	}
+	
 
 }

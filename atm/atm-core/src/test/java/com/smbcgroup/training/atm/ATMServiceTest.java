@@ -1,9 +1,12 @@
 package com.smbcgroup.training.atm;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -17,13 +20,13 @@ public class ATMServiceTest {
 	private ATMService service = new ATMService(mockDAO);
 
 	@Test(expected = UserNotFoundException.class)
-	public void testgetUser_AccountNumberDoesntExist() throws Exception {
+	public void testGetUser_AccountNumberDoesntExist() throws Exception {
 		mockDAO.stub_getUser(new UserNotFoundException());
 		service.getUser("rdelaney");
 	}
 
 	@Test
-	public void testgetUser_Success() throws Exception {
+	public void testGetUser_Success() throws Exception {
 		User user = new User();
 		user.setAccounts(new String[] { "123456" });
 		mockDAO.stub_getUser(user);
@@ -43,6 +46,23 @@ public class ATMServiceTest {
 		account.setBalance(new BigDecimal("100.00"));
 		mockDAO.stub_getAccount(account);
 		assertSame(account, service.getAccount("123456"));
+	}
+
+	@Test(expected = AccountNotFoundException.class)
+	public void testDeposit_AccountNumberDoesntExist() throws Exception {
+		mockDAO.stub_getAccount(new AccountNotFoundException());
+		service.deposit("123456", new BigDecimal("50.00"));
+	}
+
+	@Test
+	public void testDeposit_Success() throws Exception {
+		Account account = new Account();
+		account.setAccountNumber("123456");
+		account.setBalance(new BigDecimal("100.00"));
+		mockDAO.stub_getAccount(account);
+		service.deposit("123456", new BigDecimal("50.00"));
+		Account accountAfterDeposit = mockDAO.spy_updateAccount().get(0);
+		assertEquals(new BigDecimal("150.00"), accountAfterDeposit.getBalance());
 	}
 
 	private static class MockAccountDAO implements AccountDAO {
@@ -83,14 +103,14 @@ public class ATMServiceTest {
 			getAccount_exception = exception;
 		}
 
-		private Account updateAccount_capture;
+		private List<Account> updateAccount_capture = new ArrayList<>();
 
 		@Override
-		public void updateAccount(Account account) {
-			updateAccount_capture = account;
+		public void saveAccount(Account account) {
+			updateAccount_capture.add(account);
 		}
 
-		public Account spy_updateAccount() {
+		public List<Account> spy_updateAccount() {
 			return updateAccount_capture;
 		}
 

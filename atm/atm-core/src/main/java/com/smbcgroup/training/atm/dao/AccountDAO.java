@@ -9,6 +9,6 @@ public interface AccountDAO {
 
 	Account getAccount(String accountNumber) throws AccountNotFoundException;
 
-	void updateAccount(Account account);
+	void saveAccount(Account account) throws AccountNotFoundException;
 
 }

@@ -7,7 +7,10 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 
-import com.smbcgroup.training.atm.dao.txtFile.AccountAccessor;
+import com.smbcgroup.training.atm.ATMService;
+import com.smbcgroup.training.atm.dao.AccountNotFoundException;
+import com.smbcgroup.training.atm.dao.UserNotFoundException;
+import com.smbcgroup.training.atm.dao.txtFile.AccountDAOTxtFileImpl;
 
 public class ATM {
 	public static void main(String[] args) throws IOException {
@@ -15,10 +18,11 @@ public class ATM {
 	}
 
 	private static enum Action {
-		login, changeAccount, checkBalance;
+		login, changeAccount, checkBalance, deposit;
 		// TODO: add more actions
 	}
 	
+	private ATMService service = new ATMService(new AccountDAOTxtFileImpl());
 	private BufferedReader inputReader;
 	private PrintStream output;
 	private String[] loggedInUserAccounts;
@@ -69,6 +73,9 @@ public class ATM {
 		case changeAccount:
 			output.println("Enter account number: (" + String.join(", ", loggedInUserAccounts) + ")");
 			return true;
+		case deposit:
+			output.println("Enter amount:");
+			return true;
 		// TODO: prompts for other actions(?)
 		default:
 			return false;
@@ -88,10 +95,9 @@ public class ATM {
 		switch (selectedAction) {
 		case login:
 			try {
-				loggedInUserAccounts = AccountAccessor.getUserAccounts(input);
+				loggedInUserAccounts = service.getUser(input).getAccounts();
 				return Action.changeAccount;
-			} catch (IOException e) {
-				e.printStackTrace();
+			} catch (UserNotFoundException e) {
 				throw new ATMException("Invalid user ID.");
 			}
 		case changeAccount:
@@ -106,9 +112,19 @@ public class ATM {
 			throw new ATMException("Account number not found.");
 		case checkBalance:
 			try {
-				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
+				BigDecimal balance = service.getAccount(selectedAccount).getBalance();
 				output.println("Balance: $" + balance);
-			} catch (IOException e) {
+			} catch (AccountNotFoundException e) {
+				throw new RuntimeException(e);
+			}
+			break;
+		case deposit:
+			try {
+				service.deposit(selectedAccount, new BigDecimal(input));
+				output.println("Deposit accepted");
+			} catch (NumberFormatException e) {
+				throw new ATMException("Invalid amount");
+			} catch (AccountNotFoundException e) {
 				throw new RuntimeException(e);
 			}
 			break;

@@ -1,5 +1,7 @@
 package com.smbcgroup.training.atm.dao.txtFile;
 
+import java.io.IOException;
+
 import com.smbcgroup.training.atm.Account;
 import com.smbcgroup.training.atm.User;
 import com.smbcgroup.training.atm.dao.AccountDAO;
@@ -10,19 +12,35 @@ public class AccountDAOTxtFileImpl implements AccountDAO {
 
 	@Override
 	public User getUser(String userId) throws UserNotFoundException {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			User user = new User();
+			user.setUserId(userId);
+			user.setAccounts(AccountAccessor.getUserAccounts(userId));
+			return user;
+		} catch (IOException e) {
+			throw new UserNotFoundException("User file not found", e);
+		}
 	}
 
 	@Override
 	public Account getAccount(String accountNumber) throws AccountNotFoundException {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			Account account = new Account();
+			account.setAccountNumber(accountNumber);
+			account.setBalance(AccountAccessor.getAccountBalance(accountNumber));
+			return account;
+		} catch (IOException e) {
+			throw new AccountNotFoundException("Account file not found", e);
+		}
 	}
 
 	@Override
-	public void updateAccount(Account account) {
-		// TODO Auto-generated method stub
+	public void saveAccount(Account account) {
+		try {
+			AccountAccessor.updateAccountBalance(account.getAccountNumber(), account.getBalance());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }

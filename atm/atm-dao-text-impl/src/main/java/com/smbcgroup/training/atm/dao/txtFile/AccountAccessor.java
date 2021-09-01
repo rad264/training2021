@@ -18,7 +18,7 @@ public class AccountAccessor {
 	}
 
 	public static void updateAccountBalance(String accountNumber, BigDecimal balance) throws IOException {
-		writeStringToFile(dataLocation + "accounts/" + accountNumber, balance.toPlainString());
+		writeStringToFile(dataLocation + "accounts/" + accountNumber, balance != null ? balance.toPlainString() : "0");
 	}
 
 	private static String resourceToString(String fileName) throws IOException {

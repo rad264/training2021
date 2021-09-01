@@ -24,7 +24,7 @@ public class Yahtzee {
 			boolean matches(Integer[] dice) {
 				Set<Integer> set = new HashSet<>();
 				Collections.addAll(set, dice);
-				return set.size() == 5;
+				return set.size() == 1;
 			}
 		},
 		CHANCE {

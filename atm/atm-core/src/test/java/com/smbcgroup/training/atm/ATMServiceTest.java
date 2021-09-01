@@ -1,6 +1,7 @@
 package com.smbcgroup.training.atm;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
 import java.math.BigDecimal;
@@ -38,6 +39,17 @@ public class ATMServiceTest {
 
 	@Test
 	public void testGetAccount_Success() throws Exception {
+		Account account = new Account();
+		account.setAccountNumber("123456");
+		account.setBalance(new BigDecimal("100.00"));
+		mockDAO.stub_getAccount(account);
+		service.deposit(account, new BigDecimal("50.00"));
+		Account accountAfterDeposit = mockDAO.spy_updateAccount();
+		assertEquals(new BigDecimal("150.00"), accountAfterDeposit.getBalance());
+	}
+	
+	@Test
+	public void testDeposit_Success() throws Exception {
 		Account account = new Account();
 		account.setAccountNumber("123456");
 		account.setBalance(new BigDecimal("100.00"));
@@ -92,6 +104,12 @@ public class ATMServiceTest {
 
 		public Account spy_updateAccount() {
 			return updateAccount_capture;
+		}
+
+		@Override
+		public Account createAccount(String userId, String accountNumber) {
+			// TODO Auto-generated method stub
+			return null;
 		}
 
 	}

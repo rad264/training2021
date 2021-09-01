@@ -1,13 +1,13 @@
 ----------------------------------------------------------------
-Fri Aug 27 18:49:38 EDT 2021:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-017b-89cd-e96f-0000076a4bd0 
-on database directory /Users/ashton/eclipse/training2021/derby-playground/db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@4b85612c 
-Loaded from file:/Users/ashton/.m2/repository/org/apache/derby/derby/10.10.2.0/derby-10.10.2.0.jar
+Tue Aug 31 11:02:39 EDT 2021:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-017b-9cbb-d0eb-00001f5f8798 
+on database directory C:\Users\ml2683\git\training2021\derby-playground\db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@6d5380c2 
+Loaded from file:/C:/Users/ml2683/.m2/repository/org/apache/derby/derby/10.10.2.0/derby-10.10.2.0.jar
 java.vendor=Oracle Corporation
-java.runtime.version=11.0.5+10-LTS
-user.dir=/Users/ashton/eclipse/training2021/derby-playground
-os.name=Mac OS X
-os.arch=x86_64
-os.version=10.16
+java.runtime.version=16.0.2+7-67
+user.dir=C:\Users\ml2683\git\training2021\derby-playground
+os.name=Windows 10
+os.arch=amd64
+os.version=10.0
 derby.system.home=null
 Database Class Loader started - derby.database.classpath=''

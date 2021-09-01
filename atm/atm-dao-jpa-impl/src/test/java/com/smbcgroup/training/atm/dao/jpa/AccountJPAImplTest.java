@@ -61,7 +61,7 @@ public class AccountJPAImplTest {
 		Account account = new Account();
 		account.setAccountNumber("123457");
 		account.setBalance(new BigDecimal("50"));
-		dao.updateAccount(account);
+		dao.saveAccount(account);
 		
 		EntityManager em = dao.emf.createEntityManager();
 		AccountEntity savedAccount = em.find(AccountEntity.class, "123457");
@@ -75,7 +75,7 @@ public class AccountJPAImplTest {
 		Account account = new Account();
 		account.setAccountNumber("123456");
 		account.setBalance(new BigDecimal("1000"));
-		dao.updateAccount(account);
+		dao.saveAccount(account);
 		
 		EntityManager em = dao.emf.createEntityManager();
 		AccountEntity savedAccount = em.find(AccountEntity.class, "123456");

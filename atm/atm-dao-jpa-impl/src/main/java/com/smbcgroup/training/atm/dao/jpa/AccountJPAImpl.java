@@ -34,7 +34,7 @@ public class AccountJPAImpl implements AccountDAO {
 	}
 
 	@Override
-	public void updateAccount(Account account) {
+	public void saveAccount(Account account) {
 		EntityManager em = emf.createEntityManager();
 		em.getTransaction().begin();
 		try {

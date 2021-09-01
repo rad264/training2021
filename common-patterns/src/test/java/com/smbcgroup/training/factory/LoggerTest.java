@@ -10,7 +10,7 @@ public class LoggerTest {
 	public void testFooAndBar() {
 		new Foo().isFoo("foo");
 		new Bar().isBar("bar");
-		String logContents = new LoggerImpl().print(LogLevel.DEBUG);
+		String logContents = LoggerFactory.getLogger().print(LogLevel.DEBUG);
 		assertTrue(logContents.contains("Entering method Foo.isFoo"));
 		assertTrue(logContents.contains("Entering method Bar.isBar"));
 	}

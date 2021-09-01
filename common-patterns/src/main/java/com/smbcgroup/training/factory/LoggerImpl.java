@@ -9,7 +9,15 @@ public class LoggerImpl implements Logger {
 	private StringBuilder errorLogs = new StringBuilder("ERROR LOGS:");
 	private EnumMap<LogLevel, StringBuilder> logs = new EnumMap<>(LogLevel.class);
 	
-	public LoggerImpl() {
+	private static LoggerImpl instance;
+	
+	public static LoggerImpl getInstance() {
+		if (instance == null)
+			instance = new LoggerImpl();
+		return instance;
+	}
+	
+	private LoggerImpl() {
 		logs.put(LogLevel.DEBUG, debugLogs);
 		logs.put(LogLevel.INFO, infoLogs);
 		logs.put(LogLevel.ERROR, errorLogs);

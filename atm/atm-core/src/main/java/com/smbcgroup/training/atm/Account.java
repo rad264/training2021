@@ -22,5 +22,9 @@ public class Account {
 	public void setBalance(BigDecimal balance) {
 		this.balance = balance;
 	}
+	
+	public void updateBalance(BigDecimal amount) {
+		this.balance.add(amount);
+	}
 
 }

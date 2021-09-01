@@ -12,7 +12,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Random;
 
+import com.smbcgroup.training.atm.ATMService;
+import com.smbcgroup.training.atm.dao.AccountNotFoundException;
+import com.smbcgroup.training.atm.dao.UserNotFoundException;
 import com.smbcgroup.training.atm.dao.txtFile.AccountAccessor;
+import com.smbcgroup.training.atm.dao.txtFile.AccountDAOTxtFileImpl;
 
 public class ATM {
 	public static void main(String[] args) throws IOException {
@@ -25,6 +29,7 @@ public class ATM {
 		//added: deposit, withdraw, transfer, openNewAccount, accountsSummary, TransactionHistory
 	}
 	
+	private ATMService service = new ATMService(new AccountDAOTxtFileImpl());
 	private BufferedReader inputReader;
 	private PrintStream output;
 	private String[] loggedInUserAccounts;
@@ -32,6 +37,7 @@ public class ATM {
 	private Action selectedAction = Action.login; //selectedAction is originally = login
 	private String loggedInUser; //added this
 	private ArrayList<String> transactionLogger = new ArrayList<String>();
+	
 	
 
 	private ATM(InputStream input, PrintStream output) {
@@ -55,7 +61,7 @@ public class ATM {
 		}
 	}
 
-	private void triggerAction() throws IOException, SystemExit {
+	private void triggerAction() throws IOException, SystemExit, UserNotFoundException, AccountNotFoundException {
 		try {
 			String input = null;
 			if (promptUserInput())
@@ -78,27 +84,20 @@ public class ATM {
 		case changeAccount:
 			output.println("Enter account number: (" + String.join(", ", loggedInUserAccounts) + ")");
 			return true;
-		// TODO: prompts for other actions(?)
-		//case for deposit
 		case deposit:
 			output.println("Enter amount to deposit");
 			return true;
-		//case for withdraw
 		case withdraw:
 			output.println("Enter amount to withdraw");
 			return true;
-		//case for transfer
 		case transfer:
 			output.println("Enter account to transfer in amount in following format: account,amount");
 			return true;
-		//case for opening new acct
 		case openNewAccount:
 			output.println("Enter amount to deposit into new account.");
 			return true;
-		//case for getting account summary:
 		case accountsSummary:
 			return false;
-		//case for transaction history
 		case transactionHistory:
 			return false;
 		default: //case of checkBalance
@@ -106,7 +105,7 @@ public class ATM {
 		}
 	}
 
-	private Action performActionAndGetNextAction(String input) throws ATMException, SystemExit, IOException {
+	private Action performActionAndGetNextAction(String input) throws ATMException, SystemExit, IOException, UserNotFoundException, AccountNotFoundException {
 		if ("exit".equals(input))
 			throw new SystemExit();
 		if (selectedAction == null) {
@@ -119,11 +118,10 @@ public class ATM {
 		switch (selectedAction) {
 		case login:
 			try {
-				loggedInUserAccounts = AccountAccessor.getUserAccounts(input);
+				loggedInUserAccounts = service.getUser(input).getAccounts();
 				loggedInUser = input;
 				return Action.changeAccount;
-			} catch (IOException e) {
-				e.printStackTrace();
+			} catch (UserNotFoundException e) {
 				throw new ATMException("Invalid user ID.");
 			}
 		case changeAccount:
@@ -138,34 +136,20 @@ public class ATM {
 			throw new ATMException("Account number not found.");
 		case checkBalance:
 			try {
-				BigDecimal balance = AccountAccessor.getAccountBalance(selectedAccount);
+				BigDecimal balance = service.getAccount(selectedAccount).getBalance();
 				output.println("Balance: $" + balance);
-			} catch (IOException e) {
+			} catch (AccountNotFoundException e) {
 				throw new RuntimeException(e);
 			}
 			break;
-		// TODO: handle other actions
-		//case for deposit
 		case deposit:
 			try {
-				//convert input (a string of amount to deposit) into BigDecimal
-				//do this by using BigDecimal(String) constructor
-				BigDecimal depositAmount = new BigDecimal(input);
-		
-				//get original balance before deposit is made
-				BigDecimal origBalance = AccountAccessor.getAccountBalance(selectedAccount);
+				service.deposit(selectedAccount, new BigDecimal(input));
+				BigDecimal updatedBalance = service.getAccount(selectedAccount).getBalance();
+				output.println("Deposit successful. Updated balance: $" + updatedBalance);
 				
-				//get new balance
-				BigDecimal newBalance = depositAmount.add(origBalance);
-				
-				//update the account balance
-				AccountAccessor.updateAccountBalance(selectedAccount, newBalance);
-				
-				//print message saying deposit successful
-				output.println("Deposit successful. Updated balance: $" + newBalance);
-				transactionLogger.add("Deposit of $" + depositAmount + " made to account " + selectedAccount);
-			} catch (Exception e) {
-				e.printStackTrace();
+				transactionLogger.add("Deposit of $" + input + " made to account " + selectedAccount);
+			} catch (AccountNotFoundException e) {
 				throw new ATMException("Invalid amount to deposit.");
 			}
 			break;

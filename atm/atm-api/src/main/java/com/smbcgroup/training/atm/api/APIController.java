@@ -1,9 +1,12 @@
 package com.smbcgroup.training.atm.api;
 
+import java.math.BigDecimal;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,6 +44,17 @@ public class APIController {
 			return new ResponseEntity<Account>(service.getAccount(accountNumber), HttpStatus.OK);
 		} catch (AccountNotFoundException e) {
 			return new ResponseEntity<Account>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	@ApiOperation("Deposit")
+	@RequestMapping(value = "/accounts/{accountNumber}/deposits", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Void> deposit(@PathVariable("accountNumber") String accountNumber, @RequestBody BigDecimal amount) {
+		try {
+			service.deposit(accountNumber, amount);
+			return new ResponseEntity<Void>(HttpStatus.OK);
+		} catch (AccountNotFoundException e) {
+			return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
 		}
 	}
 

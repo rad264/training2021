@@ -29,8 +29,15 @@ public class AccountJPAImpl implements AccountDAO {
 
 	@Override
 	public Account getAccount(String accountNumber) throws AccountNotFoundException {
-		// TODO Auto-generated method stub
-		return null;
+		EntityManager em = emf.createEntityManager();
+		try {
+			AccountEntity entity = em.find(AccountEntity.class, accountNumber);
+			if (entity == null)
+				throw new AccountNotFoundException();
+			return entity.convertToAccount();
+		} finally {
+			em.close();
+		}
 	}
 
 	@Override

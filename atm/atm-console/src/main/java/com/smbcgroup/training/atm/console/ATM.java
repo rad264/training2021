@@ -9,11 +9,10 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Random;
 
-import com.smbcgroup.training.atm.dao.txtFile.AccountAccessor;
+import com.smbcgroup.training.atm.dao.jpa.AccountJPAImpl;
 import com.smbcgroup.training.atm.dao.txtFile.AccountDAOTxtFileImpl;
 import com.smbcgroup.training.atm.ATMService;
 import com.smbcgroup.training.atm.Account;
-import com.smbcgroup.training.atm.dao.AccountDAO;
 import com.smbcgroup.training.atm.dao.AccountNotFoundException;
 import com.smbcgroup.training.atm.User;
 import com.smbcgroup.training.atm.dao.UserNotFoundException;
@@ -35,7 +34,8 @@ public class ATM {
 	private Account transferAccount;
 	private Action selectedAction = Action.login;
 	private User loggedInUser;
-	private AccountDAOTxtFileImpl dao = new AccountDAOTxtFileImpl();
+	private AccountJPAImpl dao = new AccountJPAImpl();
+//	private AccountDAOTxtFileImpl dao = new AccountDAOTxtFileImpl();
 	private ATMService atmService;
 
 	private ATM(InputStream input, PrintStream output) {
@@ -114,7 +114,7 @@ public class ATM {
 		}
 	}
 
-	private Action performActionAndGetNextAction(String input) throws ATMException, SystemExit, UserNotFoundException, AccountNotFoundException, IOException {
+	private Action performActionAndGetNextAction(String input) throws ATMException, SystemExit, UserNotFoundException, AccountNotFoundException {
 		if ("exit".equals(input))
 			throw new SystemExit();
 		if (selectedAction == null) {
@@ -155,6 +155,8 @@ public class ATM {
 				output.println("New Balance: $" + newBalance);
 			} catch (NumberFormatException e) {
 				throw new ATMException("Invalid amount.");
+			} catch (IllegalArgumentException e) {
+				throw new ATMException(e.getMessage());
 			}
 			break;
 			
@@ -166,7 +168,7 @@ public class ATM {
 				output.println("New Balance: $" + newBalance);
 			} catch (NumberFormatException e) {
 				throw new ATMException("Invalid amount.");
-			} catch (IOException e) {
+			} catch (IllegalArgumentException e) {
 				throw new ATMException(e.getMessage());
 			}
 			break;
@@ -197,7 +199,7 @@ public class ATM {
 		case newAccount:
 			try {
 				selectedAccount = atmService.createAccount(loggedInUser, input);
-			} catch (IOException e) {
+			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				throw new ATMException("Invalid amount.");

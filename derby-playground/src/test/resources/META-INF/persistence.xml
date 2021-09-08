@@ -7,6 +7,7 @@
 	<persistence-unit name="derby-entities"
 		transaction-type="RESOURCE_LOCAL">
 		<class>com.smbcgroup.training.jpa.Employee</class>
+		<class>com.smbcgroup.training.jpa.Department</class>
 		<properties>
 			<property name="openjpa.jdbc.SynchronizeMappings"
 				value="buildSchema(SchemaAction='drop,add,deleteTableContents',IgnoreErrors=true)" />

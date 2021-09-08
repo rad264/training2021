@@ -26,9 +26,9 @@ public class ATMService {
 		return dao.getAccount(accountNumber);
 	}
 	
-	public void deposit(Account account, BigDecimal amount) throws AccountNotFoundException, IOException {
+	public void deposit(Account account, BigDecimal amount) throws AccountNotFoundException {
 		if (amount.compareTo(BigDecimal.ZERO) < 0) {
-			throw new IOException("Invalid amount.");
+			throw new IllegalArgumentException("Invalid amount.");
 		}
 		BigDecimal currentBalance = account.getBalance();
 		currentBalance = currentBalance.add(amount);
@@ -40,9 +40,9 @@ public class ATMService {
 		dao.updateAccount(account);
 	}
 
-	public void withdraw(Account account, BigDecimal amount) throws IOException {
+	public void withdraw(Account account, BigDecimal amount) {
 		if (amount.compareTo(BigDecimal.ZERO) < 0) {
-			throw new IOException("Invalid amount.");
+			throw new IllegalArgumentException("Invalid amount.");
 		}
 		BigDecimal currentBalance = account.getBalance();
 		if (currentBalance.compareTo(amount) >= 0) {
@@ -50,7 +50,7 @@ public class ATMService {
 			account.setBalance(currentBalance);
 			dao.updateAccount(account);
 		} else {
-			throw new IOException("Invalid amount.");
+			throw new IllegalArgumentException("Invalid amount.");
 		}		
 	}
 	
@@ -59,7 +59,7 @@ public class ATMService {
 		BigDecimal toBalance = toAccount.getBalance();
 		
 		if (amount.compareTo(BigDecimal.ZERO) < 0) {
-			throw new IOException("Invalid amount.");
+			throw new IllegalArgumentException("Invalid amount.");
 		}
 		if (fromBalance.compareTo(amount) >= 0) {
 			fromBalance = fromBalance.subtract(amount);
@@ -69,12 +69,12 @@ public class ATMService {
 			dao.updateAccount(fromAccount);
 			dao.updateAccount(toAccount);
 		} else {
-			throw new IOException("Invalid amount.");
+			throw new IllegalArgumentException("Invalid amount.");
 		}					
 		
 	}
 	
-	public Account createAccount(User user, String input) throws IOException {
+	public Account createAccount(User user, String input) throws UserNotFoundException {
 		String accountNumber = "";
 		
 		if ("1".equals(input)) {
@@ -83,10 +83,10 @@ public class ATMService {
 			accountNumber = String.format("%06d", number);
 		} else {
 			if (!input.matches("^\\d{6}$"))
-				throw new IOException("Invalid account number.");
+				throw new IllegalArgumentException("Invalid account number.");
 			for (String userAccount : user.getAccounts()) {
 				if (userAccount.equals(input)) {
-					throw new IOException("Invalid account number.");
+					throw new IllegalArgumentException("Invalid account number.");
 				} else {
 					accountNumber = input;
 				}

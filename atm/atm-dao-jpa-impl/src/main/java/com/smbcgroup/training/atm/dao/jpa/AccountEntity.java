@@ -9,6 +9,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.smbcgroup.training.atm.Account;
+
 @Entity
 @Table(name = "Accounts")
 public class AccountEntity {
@@ -32,6 +34,13 @@ public class AccountEntity {
 		this.accountNumber = accountNumber;
 		this.balance = balance;
 		this.user = user;
+	}
+	
+	public Account convertToAccount() {
+		Account account = new Account();
+		account.setAccountNumber(this.accountNumber);
+		account.setBalance(this.balance);
+		return account;
 	}
 
 	public String getAccountNumber() {

@@ -12,7 +12,7 @@
 			<property name="openjpa.jdbc.SynchronizeMappings"
 				value="buildSchema" />
 			<property name="javax.persistence.jdbc.url"
-				value="jdbc:derby:/Users/ashton/git/training2020/atm/atm-dao-jpa-impl/db;create=true" />
+				value="jdbc:derby:/Users/ml2683/git/training2021/atm/atm-dao-jpa-impl/db;create=true" />
 			<property name="javax.persistence.jdbc.driver"
 				value="org.apache.derby.jdbc.EmbeddedDriver" />
 			<property name="openjpa.RuntimeUnenhancedClasses"

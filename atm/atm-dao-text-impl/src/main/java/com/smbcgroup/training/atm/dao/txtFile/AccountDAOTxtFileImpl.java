@@ -56,7 +56,7 @@ public class AccountDAOTxtFileImpl implements AccountDAO {
 	}
 	
 	@Override
-	public Account createAccount(String userId, String accountNumber) {
+	public Account createAccount(String userId, String accountNumber) throws UserNotFoundException {
 		Account newAccount = new Account();
 		
 		try {

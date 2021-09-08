@@ -99,7 +99,7 @@ public class ATM {
 				return true;
 			} else {
 				output.println("You have no other account.");
-				return false;
+				return True;
 			}
 		case transferAmount:
 			BigDecimal currentBalance = selectedAccount.getBalance();

@@ -7,7 +7,9 @@ import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import org.junit.Test;
 
@@ -50,12 +52,12 @@ public class ATMServiceTest {
 	}
 	
 	@Test
-	public void testDeposit() throws AccountNotFoundException {
+	public void testDeposit() throws AccountNotFoundException, Exception {
 		Account account = new Account();
 		account.setAccountNumber("123456");
 		account.setBalance(new BigDecimal("100.00"));
 		mockDAO.stub_getAccount(account);
-		service.deposit(account.getAccountNumber(), new BigDecimal("10.00"));
+		service.deposit(account.getAccountNumber(), new BigDecimal("10.00"), "rdelaney");
 		Account updatedAccount = mockDAO.spy_updateAccount().get(0);
 		assertEquals(new BigDecimal("110.00"), updatedAccount.getBalance());
 		
@@ -68,7 +70,7 @@ public class ATMServiceTest {
 		account.setAccountNumber("123456");
 		account.setBalance(new BigDecimal("100.00"));
 		mockDAO.stub_getAccount(account);
-		service.withdraw(account.getAccountNumber(), new BigDecimal("10.00"));
+		service.withdraw(account.getAccountNumber(), new BigDecimal("10.00"), "rdelaney");
 		Account updatedAccount = mockDAO.spy_updateAccount().get(0);
 		assertEquals(new BigDecimal("90.00"), updatedAccount.getBalance());
 		
@@ -91,13 +93,27 @@ public class ATMServiceTest {
 		account2.setBalance(new BigDecimal("100.00"));
 		mockDAO.stub_getAccount(account1);
 		mockDAO.stub_getAccount(account2);
-		service.transfer(account1.getAccountNumber(), account2.getAccountNumber(), new BigDecimal("25.00"));
+		service.transfer(account1.getAccountNumber(), account2.getAccountNumber(), new BigDecimal("25.00"), "rdelaney");
 		Account debitAccount = mockDAO.spy_updateAccount().get(0);
 		Account creditAccount = mockDAO.spy_updateAccount().get(1);
 		assertEquals(new BigDecimal("175.00"), debitAccount.getBalance());
 		assertEquals(new BigDecimal("125.00"), creditAccount.getBalance());
 			
 	}
+	
+	@Test
+	public void testOpenNewAccount() throws Exception {
+		User user = new User();
+		user.setUserId("rdelaney");
+		mockDAO.stub_getUser(user);
+		service.openNewAccount("rdelaney", new BigDecimal("10.00"));
+		Account newAccount = mockDAO.spy_updateAccount().get(0);
+		assertEquals(new BigDecimal("10.00"), newAccount.getBalance());
+		
+	}
+	
+	//have to test exception?
+	//still have to test accountSummary, getTransactionHistory
 	
 
 	private static class MockAccountDAO implements AccountDAO {
@@ -120,18 +136,18 @@ public class ATMServiceTest {
 			getUser_exception = exception;
 		}
 
-		private Account getAccount_value;
+		private Queue<Account> getAccount_value = new LinkedList<>(); //try to make a queue
 		private AccountNotFoundException getAccount_exception;
 
 		@Override
 		public Account getAccount(String accountNumber) throws AccountNotFoundException {
 			if (getAccount_exception != null)
 				throw getAccount_exception;
-			return getAccount_value;
+			return getAccount_value.poll();
 		}
 
 		public void stub_getAccount(Account account) {
-			getAccount_value = account;
+			getAccount_value.add(account);
 		}
 	
 
@@ -149,6 +165,44 @@ public class ATMServiceTest {
 		public List<Account> spy_updateAccount() {
 			return updateAccount_capture;
 		}
+
+		@Override
+		public void createAccount(String accountNumber, BigDecimal balance) throws Exception {
+			Account account = new Account();
+			account.setAccountNumber(accountNumber);
+			account.setBalance(balance);
+			updateAccount_capture.add(account);
+			
+		}
+
+		@Override
+		public void linkAccountToUser(String userId, String accountNumber) throws UserNotFoundException {
+			User user = new User();
+			user.setUserId(userId);
+			String[] accounts = {accountNumber};
+			user.setAccounts(accounts);
+			
+		}
+
+		@Override
+		public void getAccountSummary(String userId, String accountNumber) throws Exception {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void updateTransactionHistory(String userId, String message) throws Exception {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void getTransactionHistory(String userId) throws Exception {
+			// TODO Auto-generated method stub
+			
+		}
+
+
 
 	}
 

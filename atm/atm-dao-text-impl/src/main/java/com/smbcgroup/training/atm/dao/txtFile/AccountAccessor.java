@@ -1,12 +1,17 @@
 package com.smbcgroup.training.atm.dao.txtFile;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class AccountAccessor {
@@ -25,6 +30,42 @@ public class AccountAccessor {
 		writeStringToFile(dataLocation + "accounts/" + accountNumber, balance.toPlainString());
 	}
 	
+	public static void updateAccountSummary(String userId, String accountNumber, BigDecimal balance) throws IOException {
+		String message = "Account: " + accountNumber + "; balance: " + balance + "\n";
+		Files.writeString(Path.of(dataLocation + "summary/" + userId + "-"+ accountNumber + "summary.txt"), message, StandardOpenOption.CREATE);
+	}
+	
+	//add reading files here
+	public static String readAccountSummary(String userId, String accountNumber) throws FileNotFoundException, IOException {
+		File accountSummaryFile = new File(dataLocation + "summary/" + userId + "-" + accountNumber + "summary.txt");
+		FileReader fileReader = new FileReader(accountSummaryFile);
+		BufferedReader bufferedReader = new BufferedReader(fileReader);
+		String lineFromFile = bufferedReader.readLine();
+		fileReader.close();
+		bufferedReader.close();
+		
+		return lineFromFile;
+	}
+	
+	public static void updateTransactionHistory(String userId, String message) throws IOException {
+		Files.writeString(Path.of(dataLocation + "transActionHistory/" + userId + "-transactionHistory.txt"), message, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+	}
+	
+	public static ArrayList<String> readTransactionHistory(String userId) throws FileNotFoundException, IOException {
+		File transactionHistoryFile = new File(dataLocation + "transActionHistory/" + userId + "-transactionHistory.txt");
+		FileReader fileReader = new FileReader(transactionHistoryFile);
+		BufferedReader bufferedReader = new BufferedReader(fileReader);
+		ArrayList<String> transactions = new ArrayList<>();
+		while(bufferedReader.readLine() != null) {
+			transactions.add(bufferedReader.readLine());
+		}
+		fileReader.close();
+		bufferedReader.close();
+		
+		return transactions;
+	}
+	
+	
 	public static void createNewAccount(String accountNumber, String balance) throws IOException {
 		File newAcctFile = new File(dataLocation + "accounts/" + accountNumber + ".txt");
 		FileWriter fw = new FileWriter(newAcctFile, true);
@@ -38,6 +79,7 @@ public class AccountAccessor {
 		fw.close();
 		
 	}
+	
 
 	private static String resourceToString(String fileName) throws IOException {
 		return Files.readString(Path.of(fileName + ".txt"));

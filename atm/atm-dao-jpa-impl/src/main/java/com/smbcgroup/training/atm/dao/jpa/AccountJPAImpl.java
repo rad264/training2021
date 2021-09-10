@@ -1,5 +1,7 @@
 package com.smbcgroup.training.atm.dao.jpa;
 
+import java.math.BigDecimal;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -46,6 +48,37 @@ public class AccountJPAImpl implements AccountDAO {
 		} finally {
 			em.close();
 		}
+	}
+
+	@Override
+	public void createAccount(String accountNumber, BigDecimal balance) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void linkAccountToUser(String userId, String accountNumber) throws UserNotFoundException {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void getAccountSummary(String userId, String accountNumber) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void updateTransactionHistory(String userId, String message) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void getTransactionHistory(String userId) throws Exception {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

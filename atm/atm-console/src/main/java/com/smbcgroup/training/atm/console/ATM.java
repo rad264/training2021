@@ -24,7 +24,7 @@ public class ATM {
 	}
 
 	private static enum Action {
-		login, changeAccount, checkBalance, deposit, withdraw, transfer, openNewAccount, accountsSummary, transactionHistory;
+		login, changeAccount, checkBalance, deposit, withdraw, transfer, openNewAccount, accountSummary, transactionHistory;
 		// TODO: add more actions
 		//added: deposit, withdraw, transfer, openNewAccount, accountsSummary, TransactionHistory
 	}
@@ -61,7 +61,7 @@ public class ATM {
 		}
 	}
 
-	private void triggerAction() throws IOException, SystemExit, UserNotFoundException, AccountNotFoundException {
+	private void triggerAction() throws SystemExit, Exception {
 		try {
 			String input = null;
 			if (promptUserInput())
@@ -91,12 +91,12 @@ public class ATM {
 			output.println("Enter amount to withdraw");
 			return true;
 		case transfer:
-			output.println("Enter account to transfer in amount in following format: account,amount");
+			output.println("Enter account to transfer and amount in following format: account,amount");
 			return true;
 		case openNewAccount:
 			output.println("Enter amount to deposit into new account.");
 			return true;
-		case accountsSummary:
+		case accountSummary:
 			return false;
 		case transactionHistory:
 			return false;
@@ -105,7 +105,7 @@ public class ATM {
 		}
 	}
 
-	private Action performActionAndGetNextAction(String input) throws ATMException, SystemExit, IOException, UserNotFoundException, AccountNotFoundException {
+	private Action performActionAndGetNextAction(String input) throws SystemExit, Exception {
 		if ("exit".equals(input))
 			throw new SystemExit();
 		if (selectedAction == null) {
@@ -144,28 +144,25 @@ public class ATM {
 			break;
 		case deposit:
 			try {
-				service.deposit(selectedAccount, new BigDecimal(input));
+				service.deposit(selectedAccount, new BigDecimal(input), loggedInUser);
 				BigDecimal updatedBalance = service.getAccount(selectedAccount).getBalance();
-				output.println("Deposit successful. Updated balance: $" + updatedBalance);
+				output.println("Deposit successful for account: " + selectedAccount + ". Updated balance: $" + updatedBalance);
 				
 				transactionLogger.add("Deposit of $" + input + " made to account " + selectedAccount);
 			} catch (AccountNotFoundException e) {
 				throw new ATMException("Invalid amount to deposit.");
 			}
 			break;
-		//case for withdraw
 		case withdraw:
 			try {
-				BigDecimal withdrawAmount = new BigDecimal(input);
-				BigDecimal origBalance = AccountAccessor.getAccountBalance(selectedAccount);
-				BigDecimal newBalance = origBalance.subtract(withdrawAmount);
-				AccountAccessor.updateAccountBalance(selectedAccount, newBalance);
-				output.println("Withdraw successful. Updated balance: $" + newBalance);
-				transactionLogger.add("Withdraw of $" + withdrawAmount + " made from account " + selectedAccount);
+				service.withdraw(selectedAccount, new BigDecimal(input), loggedInUser);
+				BigDecimal updatedBalance = service.getAccount(selectedAccount).getBalance();
+				output.println("Withdraw successful for account: " + selectedAccount + ". Updated balance: $" + updatedBalance);
+				
+				transactionLogger.add("Withdraw of $" + input + " made from account " + selectedAccount);
 				
 			} catch (Exception e) {
-				e.printStackTrace();
-				throw new ATMException("Invalid amount to withdraw.");
+				throw new ATMException("Amount to withdraw cannot be greater than current balance.");
 			}
 			break;
 		case transfer:
@@ -173,39 +170,68 @@ public class ATM {
 				String[] transferInputs = input.split(",");
 				String transferAccount = transferInputs[0];
 				BigDecimal transferAmount = new BigDecimal(transferInputs[1]);
+				service.transfer(selectedAccount, transferAccount, transferAmount, loggedInUser);
+				
+				output.println("Transfer of $" + transferAmount + " from account " + selectedAccount + " to  account " + transferAccount + " successful.");
+				output.println("New balance of account " + selectedAccount + ": " + service.getAccount(selectedAccount).getBalance());
+				output.println("New balance of account " + transferAccount + ": " + service.getAccount(transferAccount).getBalance());
+				
+				transactionLogger.add("Transfer of $" + transferAmount + " made from account " + selectedAccount + " to account " + transferAccount);
+				
+				/*
+				 * String[] transferInputs = input.split(",");
+				String transferAccount = transferInputs[0];
+				BigDecimal transferAmount = new BigDecimal(transferInputs[1]);
 				BigDecimal transferAcctOrigBalance = AccountAccessor.getAccountBalance(transferAccount);
 				BigDecimal AcctOrigBalance = AccountAccessor.getAccountBalance(selectedAccount);
 				AccountAccessor.updateAccountBalance(transferAccount, transferAmount.add(transferAcctOrigBalance));
 				AccountAccessor.updateAccountBalance(selectedAccount, AcctOrigBalance.subtract(transferAmount));
-				output.println("Tranfer of $" + transferAmount + " from account " + selectedAccount + " to  account " + transferAccount + " successful.");
+				output.println("Transfer of $" + transferAmount + " from account " + selectedAccount + " to  account " + transferAccount + " successful.");
 				output.println("New balance of account " + selectedAccount + ": " + AccountAccessor.getAccountBalance(selectedAccount));
 				output.println("New balance of account " + transferAccount + ": " + AccountAccessor.getAccountBalance(transferAccount));
 				transactionLogger.add("Transfer of $" + transferAmount + " made from account " + selectedAccount + " to account " + transferAccount);
+				 */
+				
 			} catch (Exception e) {
-				e.printStackTrace();
-				throw new ATMException("An error occured. Please try again");
+				throw new ATMException("An error occured. Please try again.");
 			}
 			break;
 		case openNewAccount:
-			//generate a new random account number
-			Random randomAccountGenerator = new Random();
+			try {
+				service.openNewAccount(loggedInUser, new BigDecimal(input));
+				loggedInUserAccounts = service.getUser(loggedInUser).getAccounts();
+				output.println("New account created");
+			} catch (Exception e) {
+				throw new ATMException("An error occured. Please try again");
+			}
+			
+			/*
+			 * Random randomAccountGenerator = new Random();
 			int newAcctNumber = randomAccountGenerator.nextInt(999999);
 			AccountAccessor.createNewAccount(String.valueOf(newAcctNumber), input);
 			AccountAccessor.addNewAccountToUserID(loggedInUser, String.valueOf(newAcctNumber));
 			loggedInUserAccounts = AccountAccessor.getUserAccounts(loggedInUser);
 			System.out.println("New account numbered " + newAcctNumber + " created with opening balance of $" + input + ".");
+			 */
 			break;
-		case accountsSummary:
-			System.out.println(loggedInUser + "'s accounts: ");
-			for(String userAccount : loggedInUserAccounts) {
+		case accountSummary:
+			service.accountSummary(loggedInUser, selectedAccount);
+			
+			/*
+			 * for(String userAccount : loggedInUserAccounts) {
 				System.out.println("Account: " + userAccount + "; balance: " + AccountAccessor.getAccountBalance(userAccount));
 			}
+			 */
+			
 			break;
 		case transactionHistory:
-			System.out.println(loggedInUser + "'s transaction history:");
+			service.getTransactionHistory(loggedInUser);
+			/*
+			 * System.out.println(loggedInUser + "'s transaction history:");
 			for (String transaction : transactionLogger) {
 				System.out.println(transaction);
 			}
+			 */
 			break;
 		}
 		return null;

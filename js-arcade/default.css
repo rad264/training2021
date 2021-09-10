@@ -1,0 +1,24 @@
+body {
+    text-align: center;
+}
+
+#game_menu {
+    width: 250px;
+    margin: auto;
+    text-align: left;
+}
+
+.board {
+    display: table;
+    margin: 0 auto;
+}
+
+.board_cell {
+    width: 36px;
+    height: 36px;
+}
+
+.board_cell button {
+    width: 35px;
+    height: 35px;
+}

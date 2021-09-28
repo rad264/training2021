@@ -58,7 +58,7 @@ public class Department {
 		return managerName;
 	}
 	
-	public void setManagerName(String ManagerName) {
+	public void setManagerName(String managerName) {
 		this.managerName = managerName;
 	}
 }

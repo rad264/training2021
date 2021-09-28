@@ -1,4 +1,5 @@
-package com.smbcgroup.training.atm.dao.txtFile;
+/*
+ * package com.smbcgroup.training.atm.dao.txtFile;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -92,3 +93,5 @@ public class AccountAccessor {
 	
 
 }
+ */
+

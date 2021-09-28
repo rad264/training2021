@@ -57,7 +57,7 @@ public class ATMServiceTest {
 		account.setAccountNumber("123456");
 		account.setBalance(new BigDecimal("100.00"));
 		mockDAO.stub_getAccount(account);
-		service.deposit(account.getAccountNumber(), new BigDecimal("10.00"), "rdelaney");
+		service.deposit(account.getAccountNumber(), new BigDecimal("10.00"));
 		Account updatedAccount = mockDAO.spy_updateAccount().get(0);
 		assertEquals(new BigDecimal("110.00"), updatedAccount.getBalance());
 		
@@ -70,7 +70,7 @@ public class ATMServiceTest {
 		account.setAccountNumber("123456");
 		account.setBalance(new BigDecimal("100.00"));
 		mockDAO.stub_getAccount(account);
-		service.withdraw(account.getAccountNumber(), new BigDecimal("10.00"), "rdelaney");
+		service.withdraw(account.getAccountNumber(), new BigDecimal("10.00"));
 		Account updatedAccount = mockDAO.spy_updateAccount().get(0);
 		assertEquals(new BigDecimal("90.00"), updatedAccount.getBalance());
 		
@@ -93,7 +93,7 @@ public class ATMServiceTest {
 		account2.setBalance(new BigDecimal("100.00"));
 		mockDAO.stub_getAccount(account1);
 		mockDAO.stub_getAccount(account2);
-		service.transfer(account1.getAccountNumber(), account2.getAccountNumber(), new BigDecimal("25.00"), "rdelaney");
+		service.transfer(account1.getAccountNumber(), account2.getAccountNumber(), new BigDecimal("25.00"));
 		Account debitAccount = mockDAO.spy_updateAccount().get(0);
 		Account creditAccount = mockDAO.spy_updateAccount().get(1);
 		assertEquals(new BigDecimal("175.00"), debitAccount.getBalance());
@@ -167,7 +167,7 @@ public class ATMServiceTest {
 		}
 
 		@Override
-		public void createAccount(String accountNumber, BigDecimal balance) throws Exception {
+		public void createAccount(String userId, String accountNumber, BigDecimal balance) throws UserNotFoundException {
 			Account account = new Account();
 			account.setAccountNumber(accountNumber);
 			account.setBalance(balance);
@@ -175,20 +175,7 @@ public class ATMServiceTest {
 			
 		}
 
-		@Override
-		public void linkAccountToUser(String userId, String accountNumber) throws UserNotFoundException {
-			User user = new User();
-			user.setUserId(userId);
-			String[] accounts = {accountNumber};
-			user.setAccounts(accounts);
-			
-		}
 
-		@Override
-		public void getAccountSummary(String userId, String accountNumber) throws Exception {
-			// TODO Auto-generated method stub
-			
-		}
 
 		@Override
 		public void updateTransactionHistory(String userId, String message) throws Exception {
@@ -197,7 +184,14 @@ public class ATMServiceTest {
 		}
 
 		@Override
-		public void getTransactionHistory(String userId) throws Exception {
+		public ArrayList<String> getTransactionHistory(String userId) throws UserNotFoundException {
+			return null;
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void createUser(String userId) {
 			// TODO Auto-generated method stub
 			
 		}

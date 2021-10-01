@@ -2,12 +2,17 @@ class CheckBalanceController extends React.Component {
     constructor(props) {
         super(props);
         this.state = new CheckBalanceModel();
+		this.state = {accounts : this.props.getAccounts()};
         this.onChange = this.onChange.bind(this);
         this.getBalance = this.getBalance.bind(this);
+
     }
     onChange(event) {
-        this.setState(new CheckBalanceModel(event.target.value));
+        this.setState({
+			[event.target.name]: event.target.value
+		});
     }
+
     getBalance() {
         const accountNumber = this.state.accountNumber;
         let handleResponse = (status, balance) => this.setState({responseStatus: status, balance: balance});
@@ -26,10 +31,10 @@ class CheckBalanceController extends React.Component {
     render() {
         return (
             <div>
-                <CheckBalanceForm accountNumber={this.state.accountNumber} onChange={this.onChange} onClick={this.getBalance} />
+                <CheckBalanceForm accountNumber={this.state.accountNumber} accounts={this.state.accounts} onChange={this.onChange} onClick={this.getBalance} />
                 <Balance statusCode={this.state.responseStatus} balance={this.state.balance} />
             </div>
         );
     }
 }
-ReactDOM.render(<CheckBalanceController />, document.getElementById("root"));
+//ReactDOM.render(<CheckBalanceController />, document.getElementById("root"));

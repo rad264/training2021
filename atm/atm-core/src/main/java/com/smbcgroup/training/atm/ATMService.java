@@ -28,14 +28,19 @@ public class ATMService {
 		return dao.getAccount(accountNumber);
 	}
 	
-	public void deposit(String accountNumber, BigDecimal amount) throws AccountNotFoundException  {
-		Account account =  dao.getAccount(accountNumber);
-		BigDecimal currentBalance = account.getBalance();
-		BigDecimal newBalance = currentBalance.add(amount);
-		account.setBalance(newBalance);
-		dao.updateAccount(account);
-		String message = "Deposited $" + amount + " in account " + account.getAccountNumber() + "\n";
-		//dao.updateTransactionHistory(userId, message);
+	public void deposit(String accountNumber, BigDecimal amount) throws AccountNotFoundException, InvalidAmountException  {
+		if (amount.compareTo(BigDecimal.ZERO) > 0) {
+			Account account =  dao.getAccount(accountNumber);
+			BigDecimal currentBalance = account.getBalance();
+			BigDecimal newBalance = currentBalance.add(amount);
+			account.setBalance(newBalance);
+			dao.updateAccount(account);
+			String message = "Deposited $" + amount + " in account " + account.getAccountNumber() + "\n";
+			//dao.updateTransactionHistory(userId, message);
+		} else {
+			throw new InvalidAmountException("Amount must be a positive number.");
+		}
+		
 		
 	}
 	
@@ -43,18 +48,18 @@ public class ATMService {
 		Account account = dao.getAccount(accountNumber); 
 		account.setAccountNumber(accountNumber);
 		BigDecimal currentBalance = account.getBalance();
-		if (amount.compareTo(currentBalance) <= 0) {
+		if (amount.compareTo(currentBalance) <= 0 && amount.compareTo(BigDecimal.ZERO) > 0) {
 			BigDecimal newBalance = currentBalance.subtract(amount);
 			account.setBalance(newBalance);
 			dao.updateAccount(account);
 			String message = "Withdrew $" + amount + " from account " + account.getAccountNumber() + "\n";
 			//dao.updateTransactionHistory(userId, message);
 		} else {
-			throw new OverdraftException("Amount to withdraw cannot be greater than current balance.");
+			throw new OverdraftException("Amount to withdraw must be positive and cannot be greater than current balance.");
 		}
 	}
 	
-	public void transfer(String accountNumber, String accountNumberToTransfer, BigDecimal amount) throws AccountNotFoundException, OverdraftException {
+	public void transfer(String accountNumber, String accountNumberToTransfer, BigDecimal amount) throws AccountNotFoundException, OverdraftException, InvalidAmountException {
 		withdraw(accountNumber, amount);
 		deposit(accountNumberToTransfer, amount);
 		String message = "Transferred $" + amount + " from account " + accountNumber + " to " + accountNumberToTransfer + "\n";
@@ -62,11 +67,17 @@ public class ATMService {
 			
 	}
 
-	public void openNewAccount(String userId, BigDecimal amount) throws UserNotFoundException {
+	public int openNewAccount(String userId, BigDecimal amount) throws UserNotFoundException, InvalidAmountException {
 		//for existing user
-		Random randomAccountGenerator = new Random();
-		int newAcctNumber = randomAccountGenerator.nextInt(999999);
-		dao.createAccount(userId, String.valueOf(newAcctNumber), amount);
+		if (amount.compareTo(BigDecimal.ZERO) > 0) {
+			Random randomAccountGenerator = new Random();
+			int newAcctNumber = randomAccountGenerator.nextInt(900000) + 100000;
+			dao.createAccount(userId, String.valueOf(newAcctNumber), amount);
+			return newAcctNumber;
+		} else {
+			throw new InvalidAmountException("Amount must be a positive number.");
+		}
+		
 		//dao.linkAccountToUser(userId, String.valueOf(newAcctNumber));
 		//Account newAccount = dao.getAccount(String.valueOf(newAcctNumber));
 		

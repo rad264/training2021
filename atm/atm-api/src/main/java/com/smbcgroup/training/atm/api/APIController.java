@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.smbcgroup.training.atm.ATMService;
 import com.smbcgroup.training.atm.Account;
+import com.smbcgroup.training.atm.InvalidAmountException;
 import com.smbcgroup.training.atm.NonUniqueIdException;
 import com.smbcgroup.training.atm.OverdraftException;
 import com.smbcgroup.training.atm.User;
@@ -54,12 +55,15 @@ public class APIController {
 	
 	@ApiOperation("Deposit")
 	@RequestMapping(value = "/accounts/{accountNumber}/deposits", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Void> deposit(@PathVariable("accountNumber") String accountNumber, @RequestBody BigDecimal amount) {
+	public ResponseEntity deposit(@PathVariable("accountNumber") String accountNumber, @RequestBody BigDecimal amount) {
 		try {
 			service.deposit(accountNumber, amount);
 			return new ResponseEntity<Void>(HttpStatus.OK);
 		} catch (AccountNotFoundException e) {
 			return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+			
+		} catch (InvalidAmountException e) {
+			return new ResponseEntity<String>("Amount must be a positive number.", HttpStatus.BAD_REQUEST);
 			
 		}
 		
@@ -74,7 +78,7 @@ public class APIController {
 		} catch (AccountNotFoundException e) { 
 			return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
 		} catch (OverdraftException e) {
-			return new ResponseEntity<String>("Amount to withdraw cannot be greater than current balance.", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<String>("Amount to withdraw must be positive and cannot be greater than current balance.", HttpStatus.BAD_REQUEST);
 			
 		}
 		
@@ -88,10 +92,11 @@ public class APIController {
 			return new ResponseEntity<Void>(HttpStatus.OK);
 		} catch (AccountNotFoundException e) { 
 			return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+		} catch (InvalidAmountException e) {
+			return new ResponseEntity<String>("Amount to transfer must be positive.", HttpStatus.BAD_REQUEST);
 		} catch (OverdraftException e) {
 			return new ResponseEntity<String>("Amount to transfer cannot be greater than account balance.", HttpStatus.BAD_REQUEST);
-			
-		}
+		}	
 		
 	}
 	
@@ -106,18 +111,19 @@ public class APIController {
 	}
 	
 	@ApiOperation("Open new account")
-	@RequestMapping(value = "users/{userId}/accounts/newAccount", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "users/{userId}/accounts/new-account", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity openNewAccount(@PathVariable("userId") String userId, @RequestBody BigDecimal amount) {
 		try {
-			service.openNewAccount(userId, amount);
-			return new ResponseEntity<Void>(HttpStatus.OK);
+			return new ResponseEntity<Integer>(service.openNewAccount(userId, amount), HttpStatus.OK);
 		} catch (UserNotFoundException e) {
 			return new ResponseEntity<BigDecimal>(HttpStatus.NOT_FOUND);
+		} catch (InvalidAmountException e) {
+			return new ResponseEntity<String>("Amount must be a positive number.", HttpStatus.BAD_REQUEST);	
 		}
 	}
 	
 	@ApiOperation("Get account summary")
-	@RequestMapping(value = "users/{userId}/accounts/accountSummary", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "users/{userId}/accounts/account-summary", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity getAccountSummary(@PathVariable("userId") String userId) {
 		try {
 			return new ResponseEntity<ArrayList>(service.accountSummary(userId), HttpStatus.OK);
@@ -139,7 +145,7 @@ public class APIController {
 	}
 	
 	@ApiOperation("Get transaction history")
-	@RequestMapping(value = "users/{userId}/transactionHistory", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "users/{userId}/transaction-history", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity getTransactionHistory(@PathVariable("userId") String userId) {
 		try {
 			return new ResponseEntity<ArrayList>(service.getTransactionHistory(userId), HttpStatus.OK);

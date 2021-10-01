@@ -1,0 +1,323 @@
+body {
+	font-family: "Share Tech Mono", monospace;
+}
+#root {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	height: 98vh;
+	width: 98vw;
+}
+
+#displayOutside {
+	position: relative;
+	height:800px;
+	width: 1000px;
+	background: #808080;
+	text-align: center;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	border-radius: 0.5rem;
+}
+
+#bezel {
+	position: relative;
+	height: 680px;
+	width: 730px;
+	background: #404040;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	border-radius: 15%;
+}
+
+#screen {
+	position: relative;
+	height: 650px;
+	width: 700px;
+	background-color: #080808;
+	border-radius: 15%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+#main{
+	width: 80%;
+}
+
+#header{
+	position: relative;
+	top: 5%;
+	left: 30%;
+	min-height: 35px;
+	font-size: 12px;
+	color: green;
+	text-align: left;
+}
+
+.header {
+	font-size: 35px;
+	color: green;
+	margin-top: 30px;
+	text-align: center;
+}
+
+.subHeader {
+	font-size: 20px;
+	color: green;
+	margin-top: 20px;
+	text-align: center;
+}
+
+.buttonContainer {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	z-index: 99;
+}
+
+.buttonContainer.left {
+	top: 100px;
+}
+
+.buttonContainer.right {
+	top: 100px;
+}
+
+.buttonWrapper {
+	height: 50px;
+	width: 75px;
+	padding: auto;
+	text-align: center;
+	background: #D3D3D3;
+	display: flex;
+	align-items: center;
+	margin: 25px 0;
+}
+
+#left{
+	justify-content: flex-start;
+}
+
+#right{
+	justify-content: flex-end;
+}
+
+.buttonWrapper button {
+	height: 40px;
+	width: 40px;
+	border: solid 4px #1fc700;
+	border-radius: 25%;
+	background: #D3D3D3;
+	margin: 10px;
+	cursor: pointer;
+	animation: borderBlink 2s linear infinite alternate;
+}
+
+.buttonWrapper button:hover {
+	background: #A9A9A9;
+}
+
+.buttonWrapper button:disabled,
+.buttonWrapper button[disabled] {
+
+	border: solid 4px #404040;
+	animation: none;
+	cursor: default;
+}
+
+.buttonWrapper button[disabled]:hover {
+	background: #D3D3D3;
+}
+
+#menu-container {
+	width: 100%;
+	height: 100%;
+}
+
+.menu {
+	display: flex;
+	height: 50px;
+	width: 150px;
+	text-align: center;
+	background: #D3D3D3;
+	margin: 25px 0;
+	justify-content: center;
+	align-items: center;
+}
+
+.menu#a {
+	position: absolute;
+	top: 276px;
+	border-radius: 0 10px 10px 0;
+}
+.menu#b {
+	position: absolute;
+	top: 276px;
+	left: 550px;
+	border-radius: 10px 0 0 10px;
+}
+.menu#c {
+	position: absolute;
+	top: 376px;
+	border-radius: 0 10px 10px 0;
+}
+.menu#d {
+	position: absolute;
+	top: 376px;
+	left: 550px;
+	border-radius: 10px 0 0 10px;
+}
+.menu#e {
+	position: absolute;
+	top: 476px;
+	border-radius: 0 10px 10px 0;
+}
+.menu#f {
+	position: absolute;
+	top: 476px;
+	left: 550px;
+	border-radius: 10px 0 0 10px;
+}
+
+.alert {
+	font-size: 20px;
+	color:  #808080;
+}
+
+.message {
+	font-size: 30px;
+	color: green;
+}
+
+.form {
+	text-align: left;
+	padding: 0 50px;
+}
+
+.formLabel {
+	font-family: "Share Tech Mono", monospace;
+	color: green;
+	font-size: 30px;
+	margin-right: 20px;
+}
+
+.adjInput {
+	font-family: "Share Tech Mono", monospace;
+	color: transparent;
+	text-shadow: 0 0 0 green;
+	background: none;
+	border: none;
+	font-size: 30px;
+	width: 1rem;
+}
+
+input:focus {
+	outline: none;
+}
+
+.blink {
+	height: 20px;
+  	margin-bottom: -4px;
+  	width: 10px;
+  	background: green;
+  	opacity: 0;
+  	display: inline-block;
+  	animation: blink 1s linear infinite alternate;
+}
+#number-container{
+	margin-top: 20px;
+	width: 200px;
+	height: 260px;
+	background: #808080;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border: solid 3px #404040;
+	border-radius: 10px;
+}
+
+.numberPad {
+	width: 180px;
+	height: 240px;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.padButtons {
+	width: 50px;
+	height: 50px;
+	margin: 5px;
+	font-weight: bolder;
+	font-size: 20px;
+	border: solid 2px #404040;
+	border-radius: 10px;
+	cursor: pointer;
+	animation: borderBlink 2s linear infinite alternate;
+	background-color: #D3D3D3;
+}
+
+.padButtons:hover {
+	background: #A9A9A9;
+}
+
+.padButtons:disabled,
+.padButtons[disabled] {
+	border: solid 2px #404040;
+	animation: none;
+	cursor: default;
+}
+
+.padButtons:disabled,
+.padButtons[disabled]:hover {
+	background-color: #D3D3D3;
+	color: black;
+}
+
+.historyTable {
+	font-size: 15px;
+	color: green;
+	width: 100%;
+	text-align: center;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+@keyframes blink {
+  	50% {
+    	opacity: 0;
+  	}
+  	100% {
+    	opacity: 1;
+  	}
+}
+
+@keyframes borderBlink {
+  	from, to {
+    	border-color: #404040;
+  	}
+  	50% {
+    	border-color: #1fc700;
+  	}
+}

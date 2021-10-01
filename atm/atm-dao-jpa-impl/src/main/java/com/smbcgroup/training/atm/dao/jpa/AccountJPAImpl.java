@@ -1,15 +1,21 @@
 package com.smbcgroup.training.atm.dao.jpa;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import com.smbcgroup.training.atm.Account;
+import com.smbcgroup.training.atm.Transaction;
 import com.smbcgroup.training.atm.User;
 import com.smbcgroup.training.atm.dao.AccountDAO;
 import com.smbcgroup.training.atm.dao.AccountNotFoundException;
+import com.smbcgroup.training.atm.dao.TransactionNotFoundException;
+import com.smbcgroup.training.atm.dao.UserAlreadyExistException;
 import com.smbcgroup.training.atm.dao.UserNotFoundException;
 
 public class AccountJPAImpl implements AccountDAO {
@@ -79,5 +85,71 @@ public class AccountJPAImpl implements AccountDAO {
 		}
 		
 	}
+	
+	@Override
+	public User createUser(String userId) throws UserAlreadyExistException {
+		EntityManager em = emf.createEntityManager();
+		try {
+			UserEntity userEntity = em.find(UserEntity.class, userId);
+			if (userEntity != null)
+				throw new UserAlreadyExistException();
+			em.getTransaction().begin();
+			UserEntity entity = new UserEntity();
+			entity.setId(userId);
+			List<AccountEntity> accounts = new ArrayList<>();
+			entity.setAccounts(accounts);
+			em.persist(entity);
+			em.getTransaction().commit();
+			return entity.convertToUser();
+		} finally {
+			em.close();
+		}
+	}
+	
+	@Override
+	public void createTransaction(String accountNumber, BigDecimal amount, String type, String description) throws AccountNotFoundException {
+		EntityManager em = emf.createEntityManager();
+		em.getTransaction().begin();
+		try {
+			AccountEntity accountEntity = em.find(AccountEntity.class, accountNumber);
+			if (accountEntity == null) {
+				throw new AccountNotFoundException();
+			}
+			TransactionEntity entity = new TransactionEntity();
+			entity.setAccount(accountEntity);
+			entity.setAmount(amount);
+			entity.setCreatedTime(new Date());
+			entity.setType(type);
+			entity.setDescription(description);
+			em.persist(entity);
+			em.getTransaction().commit();
+		} finally {
+			em.close();
+		}
+	}
 
+	@Override
+	public Transaction getTransaction(long transactionId) throws TransactionNotFoundException {
+		EntityManager em = emf.createEntityManager();
+		try {
+			TransactionEntity entity = em.find(TransactionEntity.class, transactionId);
+			if (entity == null)
+				throw new TransactionNotFoundException();
+			return entity.convertToTransaction();
+		} finally {
+			em.close();
+		}
+	}
+	
+	@Override
+	public Transaction[] getAllTransactionsByAccount(String accountNumber) throws AccountNotFoundException {
+		EntityManager em = emf.createEntityManager();
+		
+		try {
+			List<TransactionEntity> transactions = em.createQuery("SELECT t FROM TransactionEntity t JOIN t.account a WHERE a.accountNumber = '" + accountNumber + "'").getResultList();
+			return transactions.stream().map(TransactionEntity::convertToTransaction).toArray(Transaction[]::new);
+		} finally {
+			em.close();
+		}
+	}
 }

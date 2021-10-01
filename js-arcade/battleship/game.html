@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Battleship</title>
+	<link rel="stylesheet" href="../default.css">
+	<link rel="stylesheet" href="battleship.css">
+	<script type="text/javascript" src="../GameBoard.js"></script>
+	<script type="text/javascript" src="Comp.js"></script>
+	<script type="text/javascript" src="Player.js"></script>
+	<script type="text/javascript" src="BattleShip.js"></script>
+</head>
+
+<body>
+	<div id="root">
+		<div id="buttonWrap">
+			<button class="top_button" onclick="window.location='../index.html'">Home</button>
+			<button class="top_button" onclick="new BattleShip()">New Game</button>
+		</div>
+		<div id="gameWrap">
+			<div class="grid-title" id="comp-title"></div>
+			<div id="compGrid" class="board"></div>
+			<div id="playerGrid" class="board"></div>
+			<div class="grid-title" id="player-title"></div>
+		</div>
+		<div></div>
+		<button id="action_button"></button>
+		<div id="notifications">
+			<div id="directions">
+				<div id="title">Directions</div>
+				<div id="direction-text">Press <strong>New Game</strong> to start game.</div>
+			</div>
+			<div id=messages>
+				<div id="title">Notifications</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>

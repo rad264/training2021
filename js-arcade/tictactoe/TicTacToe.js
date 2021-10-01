@@ -18,5 +18,60 @@ function TicTacToe() {
     };
     this.isGameOver = function (x, y) {
         //TODO
+				let mark = gameBoard.getButton(x,y).innerHTML
+		
+		return this.checkRow(x, mark) || this.checkCol(y, mark) || this.checkDiag(mark)
+    };
+
+	this.checkRow = function (x, mark) {
+		let win = true;
+	
+		for (let y = 0; y < 3; y++){
+			let button = gameBoard.getButton(x, y)
+			
+			if (button.innerHTML !== mark){
+				win = false
+				return win
+			}
+		}
+		return win
+	}
+	
+	this.checkCol = function (y, mark) {
+		let win = true;
+	
+		for (let x = 0; x < 3; x++){
+			let button = gameBoard.getButton(x, y)
+			
+			if (button.innerHTML !== mark){
+				win = false
+				return win
+			}
+		}
+		return win
+	}
+	
+	this.checkDiag = function (mark) {
+		let win = true;
+		for (let i = 0; i < 3; i ++){
+			let button = gameBoard.getButton(i, i)
+			
+			if (button.innerHTML !== mark){
+				win = false
+			}
+		}
+		if (!win) {
+			win = true
+			y = 0
+			for (let x = 2; x >= 0; x--){
+				let button = gameBoard.getButton(x, y)
+				if (button.innerHTML !== mark){
+					win = false
+				}
+				y++
+			}
+		}
+		
+		return win 
     };
 }     

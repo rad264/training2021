@@ -18,6 +18,7 @@
 		<module>atm-dao-jpa-impl</module>
 		<module>atm-api</module>
 		<module>atm-console</module>
+		<module>api</module>
 	</modules>
 
 	<dependencies>

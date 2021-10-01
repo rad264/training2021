@@ -32,7 +32,9 @@ public class UserEntity {
 	public User convertToUser() {
 		User user = new User();
 		user.setUserId(id);
-		user.setAccounts(accounts.stream().map(AccountEntity::getAccountNumber).toArray(String[]::new));
+		if (!accounts.isEmpty()) {
+			user.setAccounts(accounts.stream().map(AccountEntity::getAccountNumber).toArray(String[]::new));
+		}
 		return user;
 	}
 
@@ -50,6 +52,10 @@ public class UserEntity {
 
 	public void setAccounts(List<AccountEntity> accounts) {
 		this.accounts = accounts;
+	}
+	
+	public void addAccount(AccountEntity account) {
+		this.accounts.add(account);
 	}
 
 }

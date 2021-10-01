@@ -2,10 +2,13 @@ package com.smbcgroup.training.atm;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Random;
 
 import com.smbcgroup.training.atm.dao.AccountDAO;
 import com.smbcgroup.training.atm.dao.AccountNotFoundException;
+import com.smbcgroup.training.atm.dao.TransactionNotFoundException;
+import com.smbcgroup.training.atm.dao.UserAlreadyExistException;
 import com.smbcgroup.training.atm.dao.UserNotFoundException;
 
 public class ATMService {
@@ -26,24 +29,21 @@ public class ATMService {
 		return dao.getAccount(accountNumber);
 	}
 	
-	public void deposit(Account account, BigDecimal amount) throws AccountNotFoundException {
+	public void deposit(String accountNumber, BigDecimal amount) throws AccountNotFoundException {
 		if (amount.compareTo(BigDecimal.ZERO) < 0) {
 			throw new IllegalArgumentException("Invalid amount.");
 		}
-		BigDecimal currentBalance = account.getBalance();
-		currentBalance = currentBalance.add(amount);
-		account.setBalance(currentBalance);
+		Account account = dao.getAccount(accountNumber);
+		account.setAccountNumber(accountNumber);
+		account.setBalance(account.getBalance().add(amount));
 		dao.updateAccount(account);
 	}
 	
-	public void updateAccount(Account account) throws AccountNotFoundException {
-		dao.updateAccount(account);
-	}
-
-	public void withdraw(Account account, BigDecimal amount) {
+	public void withdraw(String accountNumber, BigDecimal amount) throws AccountNotFoundException {
 		if (amount.compareTo(BigDecimal.ZERO) < 0) {
 			throw new IllegalArgumentException("Invalid amount.");
 		}
+		Account account = dao.getAccount(accountNumber);
 		BigDecimal currentBalance = account.getBalance();
 		if (currentBalance.compareTo(amount) >= 0) {
 			currentBalance = currentBalance.subtract(amount);
@@ -54,7 +54,9 @@ public class ATMService {
 		}		
 	}
 	
-	public void transfer(Account fromAccount, Account toAccount, BigDecimal amount) throws IOException {
+	public void transfer(String fromAccountNumber, String toAccountNumber, BigDecimal amount) throws AccountNotFoundException {
+		Account fromAccount = dao.getAccount(fromAccountNumber);
+		Account toAccount = dao.getAccount(toAccountNumber);
 		BigDecimal fromBalance = fromAccount.getBalance();
 		BigDecimal toBalance = toAccount.getBalance();
 		
@@ -74,8 +76,9 @@ public class ATMService {
 		
 	}
 	
-	public Account createAccount(User user, String input) throws UserNotFoundException {
+	public Account createAccount(String userId, String input) throws UserNotFoundException {
 		String accountNumber = "";
+		User user = dao.getUser(userId);
 		
 		if ("1".equals(input)) {
 			Random rnd = new Random();
@@ -84,14 +87,35 @@ public class ATMService {
 		} else {
 			if (!input.matches("^\\d{6}$"))
 				throw new IllegalArgumentException("Invalid account number.");
-			for (String userAccount : user.getAccounts()) {
-				if (userAccount.equals(input)) {
-					throw new IllegalArgumentException("Invalid account number.");
-				} else {
-					accountNumber = input;
+			if (user.getAccounts() != null) {
+				for (String userAccount : user.getAccounts()) {
+					if (userAccount.equals(input)) {
+						throw new IllegalArgumentException("Invalid account number.");
+					} else {
+						accountNumber = input;
+					}
 				}
+			} else {
+				accountNumber = input;
 			}
 		}
 		return dao.createAccount(user.getUserId(), accountNumber);
+	}
+	
+	public User createUser(String userId) throws UserAlreadyExistException {
+		return dao.createUser(userId);
+	}
+	
+	public void createTransaction(String accountNumber, BigDecimal amount, String type, String description) throws AccountNotFoundException {
+		dao.createTransaction(accountNumber, amount, type, description);
+	}
+	
+	public Transaction getTransaction(String transactionId) throws TransactionNotFoundException {
+		long id = Long.valueOf(transactionId);
+		return dao.getTransaction(id);
+	}
+	
+	public Transaction[] getAllTransactionsByAccount(String accountNumber) throws AccountNotFoundException {
+		return dao.getAllTransactionsByAccount(accountNumber);
 	}
 }

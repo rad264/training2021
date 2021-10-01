@@ -8,6 +8,7 @@
 		transaction-type="RESOURCE_LOCAL">
 		<class>com.smbcgroup.training.atm.dao.jpa.UserEntity</class>
 		<class>com.smbcgroup.training.atm.dao.jpa.AccountEntity</class>
+		<class>com.smbcgroup.training.atm.dao.jpa.TransactionEntity</class>
 		<properties>
 			<property name="openjpa.jdbc.SynchronizeMappings"
 				value="buildSchema" />

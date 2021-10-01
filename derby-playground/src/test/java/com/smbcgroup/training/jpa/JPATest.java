@@ -66,6 +66,13 @@ public class JPATest {
 		assertEquals(3, numEmployees.size());
 	}
 	
+	@Test
+	public void deleteAlison() {
+		int count = em.createQuery("DELETE FROM Employee e WHERE e.name = 'Alison Smith'", Employee.class).executeUpdate();
+		System.out.println(count);
+		assertEquals(1, count);
+	}
+	
 	@After
 	public void teardown() {
 		em.getTransaction().rollback();

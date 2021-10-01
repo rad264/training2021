@@ -43,7 +43,7 @@ public class ATMServiceTest {
 		account.setAccountNumber("123456");
 		account.setBalance(new BigDecimal("100.00"));
 		mockDAO.stub_getAccount(account);
-		service.deposit(account, new BigDecimal("50.00"));
+		service.deposit("123456", new BigDecimal("50.00"));
 		Account accountAfterDeposit = mockDAO.spy_updateAccount();
 		assertEquals(new BigDecimal("150.00"), accountAfterDeposit.getBalance());
 	}
